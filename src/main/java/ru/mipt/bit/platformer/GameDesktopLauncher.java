@@ -158,7 +158,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     }
 
     @Override
-    public void dispose() {
+    public void dislfpose() {
         // dispose of all the native resources (classes which implement com.badlogic.gdx.utils.Disposable)
         greenTreeTexture.dispose();
         blueTankTexture.dispose();

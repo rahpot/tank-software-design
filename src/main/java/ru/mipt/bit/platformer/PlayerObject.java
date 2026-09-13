@@ -1,26 +1,51 @@
 package ru.mipt.bit.platformer;
 
 import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Shape2D;
 
-import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
+import ru.mipt.bit.platformer.util.TileMovement;
+
+import static com.badlogic.gdx.math.MathUtils.isEqual;
+import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
 public class PlayerObject extends GameObject {
-    private GridPoint2 playerDestinationCoordinates;
-    private boolean playerMovementProgress;
 
-    void move () {
-        if (playerMovementProgress) {
-            // check potential player destination for collision with obstacles
-            if (!treeObstacleCoordinates.equals(incrementedY(getPosition()))) {
-                playerDestinationCoordinates.y++;
-                playerMovementProgress = false;
+    private static final float MOVEMENT_SPEED = 0.4f;
+
+    private GridPoint2 playerDestinationCoordinates;
+    private float playerMovementProgress = 1f;
+
+    // реакция на нажатие клавиши: пробуем начать переезд в указанном направлении
+    void move(Direction direction, GameField gameField) {
+        if (isEqual(playerMovementProgress, 1f)) {
+            GridPoint2 destination = direction.apply(getCurrentPosition());
+            if (gameField.isCellFree(this, destination)) {
+                playerDestinationCoordinates = destination;
+                playerMovementProgress = 0f;
             }
-            this.turn(Direction.RIGHT);
+            this.turn(direction);
         }
     }
 
-    PlayerObject(Shape2D collisionShape,GridPoint2 position, TextureClass texture) {
+    // вызывается каждый кадр независимо от нажатий клавиш — продвигает уже начатый переезд по времени
+    public void update(float deltaTime) {
+        playerMovementProgress = continueProgress(playerMovementProgress, deltaTime, MOVEMENT_SPEED);
+        if (isEqual(playerMovementProgress, 1f)) {
+            // переезд завершён — фиксируем итоговую клетку как официальную позицию
+            setPosition(playerDestinationCoordinates);
+        }
+    }
+
+    // позиция для отрисовки в текущем кадре — не хранится, а вычисляется каждый раз
+    // из (откуда едет, куда едет, сколько уже проехал), чтобы не было риска забыть её обновить
+    @Override
+    public Rectangle getRenderRectangle(TileMovement tileMovement) {
+        return tileMovement.moveRectangleBetweenTileCenters(
+                getCollisionRectangle(), getCurrentPosition(), playerDestinationCoordinates, playerMovementProgress);
+    }
+
+    PlayerObject(Shape2D collisionShape, GridPoint2 position, TextureClass texture) {
         super(collisionShape, position, texture);
         this.playerDestinationCoordinates = new GridPoint2(position);
     }

@@ -17,4 +17,8 @@ public class TextureClass {
         this.image = image;
         this.region = region;
     }
+
+    public TextureRegion getRegion() {
+        return this.region;
+    }
 }
