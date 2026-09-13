@@ -17,8 +17,6 @@ public class TileMovement {
         this.interpolation = interpolation;
     }
 
-    // для статичных объектов: просто поставить прямоугольник в центр одной конкретной клетки,
-    // без интерполяции между двумя клетками
     public Rectangle moveRectangleToTileCenter(Rectangle rectangle, GridPoint2 tileCoordinates) {
         return moveRectangleAtTileCenter(tileLayer, rectangle, tileCoordinates);
     }

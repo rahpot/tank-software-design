@@ -1,5 +1,6 @@
 package ru.mipt.bit.platformer;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Shape2D;
@@ -16,7 +17,6 @@ public class PlayerObject extends GameObject {
     private GridPoint2 playerDestinationCoordinates;
     private float playerMovementProgress = 1f;
 
-    // реакция на нажатие клавиши: пробуем начать переезд в указанном направлении
     void move(Direction direction, GameField gameField) {
         if (isEqual(playerMovementProgress, 1f)) {
             GridPoint2 destination = direction.apply(getCurrentPosition());
@@ -28,24 +28,20 @@ public class PlayerObject extends GameObject {
         }
     }
 
-    // вызывается каждый кадр независимо от нажатий клавиш — продвигает уже начатый переезд по времени
     public void update(float deltaTime) {
         playerMovementProgress = continueProgress(playerMovementProgress, deltaTime, MOVEMENT_SPEED);
         if (isEqual(playerMovementProgress, 1f)) {
-            // переезд завершён — фиксируем итоговую клетку как официальную позицию
             setPosition(playerDestinationCoordinates);
         }
     }
 
-    // позиция для отрисовки в текущем кадре — не хранится, а вычисляется каждый раз
-    // из (откуда едет, куда едет, сколько уже проехал), чтобы не было риска забыть её обновить
     @Override
     public Rectangle getRenderRectangle(TileMovement tileMovement) {
         return tileMovement.moveRectangleBetweenTileCenters(
                 getCollisionRectangle(), getCurrentPosition(), playerDestinationCoordinates, playerMovementProgress);
     }
 
-    PlayerObject(Shape2D collisionShape, GridPoint2 position, TextureClass texture) {
+    PlayerObject(Shape2D collisionShape, GridPoint2 position, TextureRegion texture) {
         super(collisionShape, position, texture);
         this.playerDestinationCoordinates = new GridPoint2(position);
     }
