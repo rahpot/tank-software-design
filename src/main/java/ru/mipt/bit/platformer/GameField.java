@@ -53,17 +53,22 @@ public class GameField {
             if (other == mover) {
                 continue;
             }
-            if (CollisionDetector.overlaps(projectedShape, other.getCollisionShape())) {
+            // важно: пересчитываем фигуру other так же, как и mover, а не берём
+            // getCollisionShape() "как есть" — она хранится непозиционированной
+            // (в (0,0)), реальные пиксельные координаты появляются только здесь
+            Shape2D otherShape = projectShapeAt(other, other.getCurrentPosition());
+            if (CollisionDetector.overlaps(projectedShape, otherShape)) {
                 return false;
             }
         }
         return true;
     }
 
-    // строит гипотетическую фигуру объекта так, будто он уже переехал в destination,
-    // не трогая при этом реальное положение объекта
-    private Shape2D projectShapeAt(GameObject mover, GridPoint2 destination) {
-        Shape2D shape = mover.getCollisionShape();
+    // строит фигуру объекта так, будто он находится в клетке destination —
+    // используется и для гипотетического хода mover-а, и для реального
+    // текущего положения остальных объектов поля
+    private Shape2D projectShapeAt(GameObject object, GridPoint2 destination) {
+        Shape2D shape = object.getCollisionShape();
         if (shape instanceof NoCollision) {
             return shape;
         }

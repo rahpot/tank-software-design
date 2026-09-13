@@ -4,51 +4,44 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.Rectangle;
 
 import ru.mipt.bit.platformer.util.TileMovement;
 
+import java.util.Map;
+
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
-import static com.badlogic.gdx.math.MathUtils.isEqual;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
 public class GameDesktopLauncher implements ApplicationListener {
+
+    // какая клавиша какое направление означает — вместо отдельного if на каждую клавишу
+    private static final Map<Integer, Direction> CONTROLS = Map.of(
+            UP, Direction.UP, W, Direction.UP,
+            LEFT, Direction.LEFT, A, Direction.LEFT,
+            DOWN, Direction.DOWN, S, Direction.DOWN,
+            RIGHT, Direction.RIGHT, D, Direction.RIGHT
+    );
+
     // Переменная скапливающая команды рисования и отрисовывающая их за один тик
     private Batch batch;
-    // Всё для графики (изображения классы с положением и тд)
-    private Texture blueTankTexture; // Изображение танка из tank_blue.png
-    private TextureRegion playerGraphics; // Модифицированное изображение танка, которое отрисовывается(скорее всего убран фон)
-    private Texture greenTreeTexture; // Изображение дерева из greenTree.png
-    private TextureRegion treeObstacleGraphics; // Модифицированное изображение дерева, которое отрисовывается
 
     // Работа с картой
     private TiledMap level;
     private MapRenderer levelRenderer;
     private TileMovement tileMovement;
 
-    // Скорость танка
-    private static final float MOVEMENT_SPEED = 0.4f;
-    private Rectangle playerRectangle; // можно сказать колайдер танка
-    // player current position coordinates on level 10x8 grid (e.g. x=0, y=1)
-    private GridPoint2 playerCoordinates; // положение танка (напрямую соотноится с playerRectangle)
-    // which tile the player want to go next
-    private GridPoint2 playerDestinationCoordinates; // нынешняя цель танка, пока не достигнет не обновляется
-    private float playerMovementProgress = 1f; // Отслеживает прогресс передвижения танка от 0 до 1, когда закончил можно переходить к следующей клетке
-    private float playerRotation; // Угол поворота танка
-
-    private GridPoint2 treeObstacleCoordinates = new GridPoint2(); // Клетка на сетке, где стоит дерево
-    private Rectangle treeObstacleRectangle = new Rectangle(); // колайдер дерева
+    private TextureRepository textureRepository;
+    private GameField gameField;
+    private PlayerObject player;
 
     @Override
     public void create() {
@@ -60,21 +53,16 @@ public class GameDesktopLauncher implements ApplicationListener {
         TiledMapTileLayer groundLayer = getSingleLayer(level);
         tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
 
-        // Texture decodes an image file and loads it into GPU memory, it represents a native resource
-        blueTankTexture = new Texture("images/tank_blue.png");
-        // TextureRegion represents Texture portion, there may be many TextureRegion instances of the same Texture
-        playerGraphics = new TextureRegion(blueTankTexture);
-        playerRectangle = createBoundingRectangle(playerGraphics); // Отвечает за создание колайдера
-        // set player initial position
-        playerDestinationCoordinates = new GridPoint2(1, 1);
-        playerCoordinates = new GridPoint2(playerDestinationCoordinates);
-        playerRotation = 0f;
+        textureRepository = new TextureRepository();
+        gameField = new GameField(groundLayer);
 
-        greenTreeTexture = new Texture("images/greenTree.png");
-        treeObstacleGraphics = new TextureRegion(greenTreeTexture);
-        treeObstacleCoordinates = new GridPoint2(1, 3);
-        treeObstacleRectangle = createBoundingRectangle(treeObstacleGraphics);
-        moveRectangleAtTileCenter(groundLayer, treeObstacleRectangle, treeObstacleCoordinates);
+        TextureClass tankTexture = new TextureClass(textureRepository.load("images/tank_blue.png"));
+        player = new PlayerObject(createBoundingRectangle(tankTexture.getRegion()), new GridPoint2(1, 1), tankTexture);
+        gameField.register(player);
+
+        TextureClass treeTexture = new TextureClass(textureRepository.load("images/greenTree.png"));
+        Tree tree = new Tree(createBoundingRectangle(treeTexture.getRegion()), new GridPoint2(1, 3), treeTexture);
+        gameField.register(tree);
     }
 
     @Override
@@ -86,45 +74,15 @@ public class GameDesktopLauncher implements ApplicationListener {
         // get time passed since the last render
         float deltaTime = Gdx.graphics.getDeltaTime();
 
-        if (Gdx.input.isKeyPressed(UP) || Gdx.input.isKeyPressed(W)) {
-            // Здесь должен быть move (UP)
-        }
-        if (Gdx.input.isKeyPressed(LEFT) || Gdx.input.isKeyPressed(A)) {
-            if (isEqual(playerMovementProgress, 1f)) {
-                if (!treeObstacleCoordinates.equals(decrementedX(playerCoordinates))) {
-                    playerDestinationCoordinates.x--;
-                    playerMovementProgress = 0f;
-                }
-                playerRotation = -180f;
-            }
-        }
-        if (Gdx.input.isKeyPressed(DOWN) || Gdx.input.isKeyPressed(S)) {
-            if (isEqual(playerMovementProgress, 1f)) {
-                if (!treeObstacleCoordinates.equals(decrementedY(playerCoordinates))) {
-                    playerDestinationCoordinates.y--;
-                    playerMovementProgress = 0f;
-                }
-                playerRotation = -90f;
-            }
-        }
-        if (Gdx.input.isKeyPressed(RIGHT) || Gdx.input.isKeyPressed(D)) {
-            if (isEqual(playerMovementProgress, 1f)) {
-                if (!treeObstacleCoordinates.equals(incrementedX(playerCoordinates))) {
-                    playerDestinationCoordinates.x++;
-                    playerMovementProgress = 0f;
-                }
-                playerRotation = 0f;
+        for (Map.Entry<Integer, Direction> entry : CONTROLS.entrySet()) {
+            if (Gdx.input.isKeyPressed(entry.getKey())) {
+                player.move(entry.getValue(), gameField);
+                break;
             }
         }
 
-        // calculate interpolated player screen coordinates
-        tileMovement.moveRectangleBetweenTileCenters(playerRectangle, playerCoordinates, playerDestinationCoordinates, playerMovementProgress);
-
-        playerMovementProgress = continueProgress(playerMovementProgress, deltaTime, MOVEMENT_SPEED);
-        if (isEqual(playerMovementProgress, 1f)) {
-            // record that the player has reached his/her destination
-            playerCoordinates.set(playerDestinationCoordinates);
-        }
+        // продвигаем уже начатый переезд по времени
+        player.update(deltaTime);
 
         // render each tile of the level
         levelRenderer.render();
@@ -132,11 +90,11 @@ public class GameDesktopLauncher implements ApplicationListener {
         // start recording all drawing commands
         batch.begin();
 
-        // render player
-        drawTextureRegionUnscaled(batch, playerGraphics, playerRectangle, playerRotation);
-
-        // render tree obstacle
-        drawTextureRegionUnscaled(batch, treeObstacleGraphics, treeObstacleRectangle, 0f);
+        // render every registered game object the same way, regardless of its concrete type
+        for (GameObject object : gameField.getObjects()) {
+            drawTextureRegionUnscaled(batch, object.getTexture().getRegion(),
+                    object.getRenderRectangle(tileMovement), object.getCurrentRotation());
+        }
 
         // submit all drawing requests
         batch.end();
@@ -158,10 +116,9 @@ public class GameDesktopLauncher implements ApplicationListener {
     }
 
     @Override
-    public void dislfpose() {
+    public void dispose() {
         // dispose of all the native resources (classes which implement com.badlogic.gdx.utils.Disposable)
-        greenTreeTexture.dispose();
-        blueTankTexture.dispose();
+        textureRepository.dispose();
         level.dispose();
         batch.dispose();
     }
