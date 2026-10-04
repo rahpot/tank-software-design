@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Rectangle;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.moveRectangleAtTileCenter;
 
-public class TileMovement {
+public class TileMovement implements TilePlacement {
 
     private final TiledMapTileLayer tileLayer;
     private final Interpolation interpolation;
@@ -17,10 +17,12 @@ public class TileMovement {
         this.interpolation = interpolation;
     }
 
+    @Override
     public Rectangle moveRectangleToTileCenter(Rectangle rectangle, GridPoint2 tileCoordinates) {
         return moveRectangleAtTileCenter(tileLayer, rectangle, tileCoordinates);
     }
 
+    @Override
     public Rectangle moveRectangleBetweenTileCenters(Rectangle rectangle, GridPoint2 fromTileCoordinates, GridPoint2 toTileCoordinates, float progress) {
         moveRectangleAtTileCenter(tileLayer, rectangle, fromTileCoordinates);
         float fromTileBottomLeftX = rectangle.x;

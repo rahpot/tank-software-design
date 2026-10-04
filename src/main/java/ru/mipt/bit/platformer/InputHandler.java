@@ -1,15 +1,15 @@
 package ru.mipt.bit.platformer;
 
-import com.badlogic.gdx.Gdx;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class InputHandler {
 
+    private final KeyboardInput keyboard;
     private final Map<Integer, Runnable> keyActions = new LinkedHashMap<>();
 
-    public InputHandler(Map<Integer, Runnable> initialBindings) {
+    public InputHandler(KeyboardInput keyboard, Map<Integer, Runnable> initialBindings) {
+        this.keyboard = keyboard;
         keyActions.putAll(initialBindings);
     }
 
@@ -19,7 +19,7 @@ public class InputHandler {
 
     public void handleInput() {
         for (Map.Entry<Integer, Runnable> entry : keyActions.entrySet()) {
-            if (Gdx.input.isKeyPressed(entry.getKey())) {
+            if (keyboard.isKeyPressed(entry.getKey())) {
                 entry.getValue().run();
             }
         }

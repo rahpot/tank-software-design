@@ -2,12 +2,11 @@ package ru.mipt.bit.platformer;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Shape2D;
 
-import ru.mipt.bit.platformer.util.TileMovement;
+import ru.mipt.bit.platformer.util.TilePlacement;
 
 public class GameObject {
-    private Shape2D collisionShape;
+    private CollisionShape collisionShape;
     private GridPoint2 position;
     private float rotation;
 
@@ -19,7 +18,7 @@ public class GameObject {
         this.position = position;
     }
 
-    public Shape2D getCollisionShape () {
+    public CollisionShape getCollisionShape () {
         return this.collisionShape;
     }
 
@@ -27,37 +26,37 @@ public class GameObject {
         return this.rotation;
     }
 
+    public boolean blocksMovement () {
+        return true;
+    }
+
     public void turn(Direction finishDirection) {
         this.rotation = finishDirection.getRotationAngle();
     }
 
     protected Rectangle getCollisionRectangle () {
-        if (!(collisionShape instanceof Rectangle)) {
-            throw new UnsupportedOperationException(
-                    "Отрисовка для " + collisionShape.getClass().getSimpleName() + " пока не поддержана");
-        }
-        return new Rectangle((Rectangle) collisionShape);
+        return collisionShape.boundingRectangle();
     }
 
-    public Rectangle getRenderRectangle (TileMovement tileMovement) {
-        return tileMovement.moveRectangleToTileCenter(getCollisionRectangle(), position);
+    public Rectangle getRenderRectangle (TilePlacement tilePlacement) {
+        return tilePlacement.moveRectangleToTileCenter(getCollisionRectangle(), position);
     }
 
-    public GameObject(Shape2D collisionShape, GridPoint2 position, float rotation) {
+    public GameObject(CollisionShape collisionShape, GridPoint2 position, float rotation) {
         this.collisionShape = collisionShape;
         this.position = position;
         this.rotation = rotation;
     }
 
-    public GameObject(Shape2D collisionShape) {
+    public GameObject(CollisionShape collisionShape) {
         this(collisionShape, new GridPoint2(0, 0), 0.0F);
     }
 
-    public GameObject(Shape2D collisionShape, GridPoint2 position) {
+    public GameObject(CollisionShape collisionShape, GridPoint2 position) {
         this(collisionShape, position, 0.0F);
     }
 
-    public GameObject(Shape2D collisionShape, float rotation) {
+    public GameObject(CollisionShape collisionShape, float rotation) {
         this(collisionShape, new GridPoint2(0, 0), rotation);
     }
 }

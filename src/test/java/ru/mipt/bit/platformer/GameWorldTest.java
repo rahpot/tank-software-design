@@ -1,6 +1,5 @@
 package ru.mipt.bit.platformer;
 
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.GridPoint2;
@@ -8,75 +7,134 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import ru.mipt.bit.platformer.util.TileMovement;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 class GameWorldTest {
 
-    private GameField newGameField() {
-        return new GameField(new TiledMapTileLayer(10, 10, 128, 128));
+    private static class RecordingRenderer implements Renderer {
+
+        private final List<WorldObject> lastRendered = new ArrayList<>();
+
+        @Override
+        public void render(Collection<WorldObject> objects) {
+            lastRendered.clear();
+            lastRendered.addAll(objects);
+        }
     }
 
-    private GameRender newGameRender(Batch batch) {
+    private final RecordingRenderer renderer = new RecordingRenderer();
+
+    private GameWorld newGameWorld() {
         TileMovement tileMovement = new TileMovement(new TiledMapTileLayer(10, 10, 128, 128), Interpolation.linear);
-        return new GameRender(batch, tileMovement);
+        return new GameWorld(new PlacementRule(tileMovement), renderer);
     }
 
-    private GameObject newObject() {
-        return new GameObject(new Rectangle(0, 0, 100, 100), new GridPoint2(0, 0));
+    private GameObject newObject(GridPoint2 position) {
+        return new GameObject(new RectangleShape(new Rectangle(0, 0, 100, 100)), position);
     }
 
     @Test
-    void spawnRegistersObjectInTheField() {
-        GameField gameField = newGameField();
-        GameWorld gameWorld = new GameWorld(gameField, newGameRender(mock(Batch.class)));
-        GameObject object = newObject();
+    void spawnedObjectIsPartOfTheWorld() {
+        GameWorld gameWorld = newGameWorld();
+        GameObject object = newObject(new GridPoint2(0, 0));
 
         gameWorld.spawn(object, mock(TextureRegion.class));
 
-        assertTrue(gameField.getObjects().contains(object));
+        assertEquals(List.of(object), gameWorld.getObjects());
     }
 
     @Test
-    void spawnRegistersTextureSoRenderSucceeds() {
-        GameField gameField = newGameField();
-        GameWorld gameWorld = new GameWorld(gameField, newGameRender(mock(Batch.class)));
-        GameObject object = newObject();
+    void spawnedObjectIsHandedToTheRendererWithItsTexture() {
+        GameWorld gameWorld = newGameWorld();
+        GameObject object = newObject(new GridPoint2(0, 0));
+        TextureRegion texture = mock(TextureRegion.class);
+        gameWorld.spawn(object, texture);
 
-        gameWorld.spawn(object, mock(TextureRegion.class));
+        gameWorld.render();
 
-        assertDoesNotThrow(gameWorld::render);
+        assertEquals(1, renderer.lastRendered.size());
+        assertSame(object, renderer.lastRendered.get(0).getObject());
+        assertSame(texture, renderer.lastRendered.get(0).getTexture());
     }
 
     @Test
-    void destroyRemovesObjectFromTheField() {
-        GameField gameField = newGameField();
-        GameWorld gameWorld = new GameWorld(gameField, newGameRender(mock(Batch.class)));
-        GameObject object = newObject();
-        gameWorld.spawn(object, mock(TextureRegion.class));
-
-        gameWorld.destroy(object);
-
-        assertEquals(0, gameField.getObjects().size());
-    }
-
-    @Test
-    void destroyAlsoRemovesTheTextureNotJustTheObject() {
-        GameField gameField = newGameField();
-        GameWorld gameWorld = new GameWorld(gameField, newGameRender(mock(Batch.class)));
-        GameObject object = newObject();
+    void destroyRemovesTheObjectFromTheWorld() {
+        GameWorld gameWorld = newGameWorld();
+        GameObject object = newObject(new GridPoint2(0, 0));
         gameWorld.spawn(object, mock(TextureRegion.class));
 
         gameWorld.destroy(object);
-        // re-registered only in the model, bypassing the facade, to prove
-        // GameRender's texture entry was actually cleared by destroy() too
-        gameField.register(object);
 
-        assertThrows(IllegalStateException.class, gameWorld::render);
+        assertTrue(gameWorld.getObjects().isEmpty());
+    }
+
+    @Test
+    void destroyedObjectIsNoLongerRendered() {
+        GameWorld gameWorld = newGameWorld();
+        GameObject object = newObject(new GridPoint2(0, 0));
+        gameWorld.spawn(object, mock(TextureRegion.class));
+
+        gameWorld.destroy(object);
+        gameWorld.render();
+
+        assertTrue(renderer.lastRendered.isEmpty());
+    }
+
+    @Test
+    void objectsAreRenderedInSpawnOrder() {
+        GameWorld gameWorld = newGameWorld();
+        GameObject first = newObject(new GridPoint2(0, 0));
+        GameObject second = newObject(new GridPoint2(5, 5));
+        gameWorld.spawn(first, mock(TextureRegion.class));
+        gameWorld.spawn(second, mock(TextureRegion.class));
+
+        gameWorld.render();
+
+        assertSame(first, renderer.lastRendered.get(0).getObject());
+        assertSame(second, renderer.lastRendered.get(1).getObject());
+    }
+
+    @Test
+    void spawnedObstacleOccupiesItsCell() {
+        GameWorld gameWorld = newGameWorld();
+        GameObject mover = newObject(new GridPoint2(0, 0));
+        GameObject obstacle = newObject(new GridPoint2(1, 0));
+        gameWorld.spawn(mover, mock(TextureRegion.class));
+        gameWorld.spawn(obstacle, mock(TextureRegion.class));
+
+        assertFalse(gameWorld.isCellFree(mover, new GridPoint2(1, 0)));
+    }
+
+    @Test
+    void destroyedObstacleStopsOccupyingItsCell() {
+        GameWorld gameWorld = newGameWorld();
+        GameObject mover = newObject(new GridPoint2(0, 0));
+        GameObject obstacle = newObject(new GridPoint2(1, 0));
+        gameWorld.spawn(mover, mock(TextureRegion.class));
+        gameWorld.spawn(obstacle, mock(TextureRegion.class));
+
+        gameWorld.destroy(obstacle);
+
+        assertTrue(gameWorld.isCellFree(mover, new GridPoint2(1, 0)));
+    }
+
+    @Test
+    void getObjectsDoesNotExposeTheInternalRegistry() {
+        GameWorld gameWorld = newGameWorld();
+        gameWorld.spawn(newObject(new GridPoint2(0, 0)), mock(TextureRegion.class));
+
+        gameWorld.getObjects().clear();
+
+        assertEquals(1, gameWorld.getObjects().size());
     }
 }

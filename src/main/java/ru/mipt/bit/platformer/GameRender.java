@@ -1,44 +1,30 @@
 package ru.mipt.bit.platformer;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-import ru.mipt.bit.platformer.util.TileMovement;
+import java.util.Collection;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
+import ru.mipt.bit.platformer.util.TilePlacement;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.drawTextureRegionUnscaled;
 
-public class GameRender {
+public class GameRender implements Renderer {
 
     private final Batch batch;
-    private final TileMovement tileMovement;
-    private final Map<GameObject, TextureRegion> textures = new IdentityHashMap<>();
+    private final TilePlacement tilePlacement;
 
-    public GameRender(Batch batch, TileMovement tileMovement) {
+    public GameRender(Batch batch, TilePlacement tilePlacement) {
         this.batch = batch;
-        this.tileMovement = tileMovement;
+        this.tilePlacement = tilePlacement;
     }
 
-    void register(GameObject object, TextureRegion texture) {
-        textures.put(object, texture);
-    }
-
-    void unregister(GameObject object) {
-        textures.remove(object);
-    }
-
-    public void render(GameField gameField) {
+    @Override
+    public void render(Collection<WorldObject> objects) {
         batch.begin();
-        for (GameObject object : gameField.getObjects()) {
-            TextureRegion texture = textures.get(object);
-            if (texture == null) {
-                throw new IllegalStateException(
-                        "No texture registered for " + object.getClass().getSimpleName());
-            }
-            drawTextureRegionUnscaled(batch, texture,
-                    object.getRenderRectangle(tileMovement), object.getCurrentRotation());
+        for (WorldObject entry : objects) {
+            GameObject object = entry.getObject();
+            drawTextureRegionUnscaled(batch, entry.getTexture(),
+                    object.getRenderRectangle(tilePlacement), object.getCurrentRotation());
         }
         batch.end();
     }

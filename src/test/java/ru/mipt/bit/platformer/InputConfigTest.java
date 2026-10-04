@@ -1,6 +1,5 @@
 package ru.mipt.bit.platformer;
 
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
 import org.junit.jupiter.api.Test;
@@ -21,17 +20,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InputConfigTest {
 
-    private GameField newGameField() {
-        return new GameField(new TiledMapTileLayer(10, 10, 128, 128));
-    }
+    private static final Obstacles NOTHING_IN_THE_WAY = (mover, destination) -> true;
 
     private PlayerObject newPlayer() {
-        return new PlayerObject(new Rectangle(0, 0, 100, 100), new GridPoint2(1, 1));
+        return new PlayerObject(new RectangleShape(new Rectangle(0, 0, 100, 100)), new GridPoint2(1, 1));
     }
 
     @Test
     void bindsAllMovementKeys() {
-        Map<Integer, Runnable> controls = InputConfig.defaultControls(newPlayer(), newGameField());
+        Map<Integer, Runnable> controls = InputConfig.defaultControls(newPlayer(), NOTHING_IN_THE_WAY);
 
         assertTrue(controls.keySet().containsAll(List.of(UP, W, LEFT, A, DOWN, S, RIGHT, D)));
         assertEquals(8, controls.size());
@@ -40,7 +37,7 @@ class InputConfigTest {
     @Test
     void upAndWTurnPlayerUp() {
         PlayerObject player = newPlayer();
-        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, newGameField());
+        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
 
         controls.get(UP).run();
 
@@ -50,7 +47,7 @@ class InputConfigTest {
     @Test
     void leftAndATurnPlayerLeft() {
         PlayerObject player = newPlayer();
-        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, newGameField());
+        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
 
         controls.get(A).run();
 
@@ -60,7 +57,7 @@ class InputConfigTest {
     @Test
     void downAndSTurnPlayerDown() {
         PlayerObject player = newPlayer();
-        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, newGameField());
+        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
 
         controls.get(S).run();
 
@@ -70,7 +67,7 @@ class InputConfigTest {
     @Test
     void rightAndDTurnPlayerRight() {
         PlayerObject player = newPlayer();
-        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, newGameField());
+        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
 
         controls.get(D).run();
 
