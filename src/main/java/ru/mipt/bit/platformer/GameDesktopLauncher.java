@@ -1,34 +1,42 @@
 package ru.mipt.bit.platformer;
 
+import ru.mipt.bit.platformer.collision.PlacementRule;
+import ru.mipt.bit.platformer.control.GdxKeyboardInput;
+import ru.mipt.bit.platformer.control.InputConfig;
+import ru.mipt.bit.platformer.control.InputHandler;
+import ru.mipt.bit.platformer.graphics.GameRender;
+import ru.mipt.bit.platformer.graphics.TextureRepository;
+import ru.mipt.bit.platformer.level.HardcodedLevelSource;
+import ru.mipt.bit.platformer.level.LevelBuilder;
+import ru.mipt.bit.platformer.level.LevelSource;
+import ru.mipt.bit.platformer.world.GameWorld;
+import ru.mipt.bit.platformer.world.PlayerObject;
+import ru.mipt.bit.platformer.util.TileMovement;
+
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
 
-import ru.mipt.bit.platformer.util.TileMovement;
 
-import java.util.Map;
-
-import static com.badlogic.gdx.Input.Keys.*;
-import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
+import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 
 public class GameDesktopLauncher implements ApplicationListener {
-    private static final Map<Integer, Direction> CONTROLS = Map.of(
-            UP, Direction.UP, W, Direction.UP,
-            LEFT, Direction.LEFT, A, Direction.LEFT,
-            DOWN, Direction.DOWN, S, Direction.DOWN,
-            RIGHT, Direction.RIGHT, D, Direction.RIGHT
-    );
+
+    private static final String DEFAULT_LEVEL_PATH = "level.tmx";
+    private static final Interpolation MOVEMENT_INTERPOLATION = Interpolation.smooth;
+    private static final Color BACKGROUND_COLOR = new Color(0f, 0f, 0.2f, 1f);
+    private static final int WINDOW_WIDTH = 1280;
+    private static final int WINDOW_HEIGHT = 1024;
 
     private Batch batch;
 
@@ -36,57 +44,61 @@ public class GameDesktopLauncher implements ApplicationListener {
     private MapRenderer levelRenderer;
     private TileMovement tileMovement;
 
+    private final LevelSource levelSource;
+    private final String levelPath;
+
     private TextureRepository textureRepository;
-    private GameField gameField;
+    private PlacementRule placementRule;
+    private GameWorld gameWorld;
     private PlayerObject player;
+    private InputHandler inputHandler;
+
+    public GameDesktopLauncher(LevelSource levelSource, String levelPath) {
+        this.levelSource = levelSource;
+        this.levelPath = levelPath;
+    }
+
+    public GameDesktopLauncher(LevelSource levelSource) {
+        this(levelSource, DEFAULT_LEVEL_PATH);
+    }
+
+    public GameDesktopLauncher() {
+        this(new HardcodedLevelSource());
+    }
 
     @Override
     public void create() {
         batch = new SpriteBatch();
 
-        level = new TmxMapLoader().load("level.tmx");
+        level = new TmxMapLoader().load(levelPath);
         levelRenderer = createSingleLayerMapRenderer(level, batch);
         TiledMapTileLayer groundLayer = getSingleLayer(level);
-        tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
+        tileMovement = new TileMovement(groundLayer, MOVEMENT_INTERPOLATION);
 
         textureRepository = new TextureRepository();
-        gameField = new GameField(groundLayer);
+        placementRule = new PlacementRule(tileMovement);
+        GameRender gameRender = new GameRender(batch, tileMovement);
+        gameWorld = new GameWorld(placementRule, gameRender);
 
-        TextureRegion tankTexture = new TextureRegion(textureRepository.load("images/tank_blue.png"));
-        player = new PlayerObject(createBoundingRectangle(tankTexture), new GridPoint2(1, 1), tankTexture);
-        gameField.register(player);
+        player = new LevelBuilder(textureRepository).build(levelSource.load(), gameWorld);
 
-        TextureRegion treeTexture = new TextureRegion(textureRepository.load("images/greenTree.png"));
-        Tree tree = new Tree(createBoundingRectangle(treeTexture), new GridPoint2(1, 3), treeTexture);
-        gameField.register(tree);
+        inputHandler = new InputHandler(new GdxKeyboardInput(), InputConfig.defaultControls(player, gameWorld));
     }
 
     @Override
     public void render() {
-        Gdx.gl.glClearColor(0f, 0f, 0.2f, 1f);
+        Gdx.gl.glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.a);
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
 
         float deltaTime = Gdx.graphics.getDeltaTime();
 
-        for (Map.Entry<Integer, Direction> entry : CONTROLS.entrySet()) {
-            if (Gdx.input.isKeyPressed(entry.getKey())) {
-                player.move(entry.getValue(), gameField);
-                break;
-            }
-        }
+        inputHandler.handleInput();
 
         player.update(deltaTime);
 
         levelRenderer.render();
 
-        batch.begin();
-
-        for (GameObject object : gameField.getObjects()) {
-            drawTextureRegionUnscaled(batch, object.getTexture(),
-                    object.getRenderRectangle(tileMovement), object.getCurrentRotation());
-        }
-
-        batch.end();
+        gameWorld.render();
     }
 
     @Override
@@ -113,8 +125,7 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     public static void main(String[] args) {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-        // level width: 10 tiles x 128px, height: 8 tiles x 128px
-        config.setWindowedMode(1280, 1024);
+        config.setWindowedMode(WINDOW_WIDTH, WINDOW_HEIGHT);
         new Lwjgl3Application(new GameDesktopLauncher(), config);
     }
 }
