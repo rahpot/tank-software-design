@@ -83,7 +83,7 @@ class LevelBuilderTest {
     @Test
     void playerIsSpawnedAtThePositionFromTheLevel() {
         GameWorld gameWorld = newGameWorld();
-        Level level = new Level(new GridPoint2(3, 4), List.of());
+        Level level = new Level(10, 8, new GridPoint2(3, 4), List.of());
 
         PlayerObject player = new LevelBuilder(textures).build(level, gameWorld);
 
@@ -94,7 +94,7 @@ class LevelBuilderTest {
     @Test
     void everyPlacementBecomesAnObjectInTheWorld() {
         GameWorld gameWorld = newGameWorld();
-        Level level = new Level(new GridPoint2(0, 0), List.of(
+        Level level = new Level(10, 8, new GridPoint2(0, 0), List.of(
                 new Placement(new StubTemplate("tree.png"), new GridPoint2(1, 3)),
                 new Placement(new StubTemplate("tree.png"), new GridPoint2(5, 5))));
 
@@ -109,7 +109,7 @@ class LevelBuilderTest {
     @Test
     void textureOfTheSamePathIsRequestedOnlyOnce() {
         GameWorld gameWorld = newGameWorld();
-        Level level = new Level(new GridPoint2(0, 0), List.of(
+        Level level = new Level(10, 8, new GridPoint2(0, 0), List.of(
                 new Placement(new StubTemplate("tree.png"), new GridPoint2(1, 3)),
                 new Placement(new StubTemplate("tree.png"), new GridPoint2(5, 5)),
                 new Placement(new StubTemplate("tree.png"), new GridPoint2(7, 7))));
@@ -122,7 +122,7 @@ class LevelBuilderTest {
     @Test
     void playerTexturePathCanBeOverridden() {
         GameWorld gameWorld = newGameWorld();
-        Level level = new Level(new GridPoint2(0, 0), List.of());
+        Level level = new Level(10, 8, new GridPoint2(0, 0), List.of());
 
         new LevelBuilder(textures, "images/tank_green.png").build(level, gameWorld);
 
@@ -132,7 +132,7 @@ class LevelBuilderTest {
     @Test
     void builtPlayerIsTheOneThatWasSpawned() {
         GameWorld gameWorld = newGameWorld();
-        Level level = new Level(new GridPoint2(2, 2), List.of());
+        Level level = new Level(10, 8, new GridPoint2(2, 2), List.of());
 
         PlayerObject player = new LevelBuilder(textures).build(level, gameWorld);
 
