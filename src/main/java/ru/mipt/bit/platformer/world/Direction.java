@@ -1,4 +1,4 @@
-package ru.mipt.bit.platformer;
+package ru.mipt.bit.platformer.world;
 
 import com.badlogic.gdx.math.GridPoint2;
 
