@@ -1,5 +1,18 @@
 package ru.mipt.bit.platformer;
 
+import ru.mipt.bit.platformer.collision.PlacementRule;
+import ru.mipt.bit.platformer.control.GdxKeyboardInput;
+import ru.mipt.bit.platformer.control.InputConfig;
+import ru.mipt.bit.platformer.control.InputHandler;
+import ru.mipt.bit.platformer.graphics.GameRender;
+import ru.mipt.bit.platformer.graphics.TextureRepository;
+import ru.mipt.bit.platformer.level.HardcodedLevelSource;
+import ru.mipt.bit.platformer.level.LevelBuilder;
+import ru.mipt.bit.platformer.level.LevelSource;
+import ru.mipt.bit.platformer.world.GameWorld;
+import ru.mipt.bit.platformer.world.PlayerObject;
+import ru.mipt.bit.platformer.util.TileMovement;
+
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
@@ -13,10 +26,9 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Interpolation;
 
-import ru.mipt.bit.platformer.util.TileMovement;
 
-import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
+import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 
 public class GameDesktopLauncher implements ApplicationListener {
 
