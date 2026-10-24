@@ -16,15 +16,20 @@ public class LevelParserFromFile implements LevelSource {
 
     private static final char TREE = 'T';
     private static final char PLAYER = 'X';
+    private static final char TANK = 'A';
 
-    private final String mapName;
+    private final Path mapFile;
 
     public LevelParserFromFile() {
         this(DEFAULT_MAP);
     }
 
     public LevelParserFromFile(String mapName) {
-        this.mapName = mapName;
+        this(Path.of(MAPS_DIRECTORY, mapName));
+    }
+
+    public LevelParserFromFile(Path mapFile) {
+        this.mapFile = mapFile;
     }
 
     @Override
@@ -32,6 +37,7 @@ public class LevelParserFromFile implements LevelSource {
         String[] rows = readMap().lines().toArray(String[]::new);
 
         List<Placement> placements = new ArrayList<>();
+        List<GridPoint2> tankPositions = new ArrayList<>();
         GridPoint2 playerPosition = null;
         int width = 0;
 
@@ -48,6 +54,9 @@ public class LevelParserFromFile implements LevelSource {
                     case PLAYER:
                         playerPosition = new GridPoint2(x, y);
                         break;
+                    case TANK:
+                        tankPositions.add(new GridPoint2(x, y));
+                        break;
                     default:
                         break;
                 }
@@ -57,11 +66,10 @@ public class LevelParserFromFile implements LevelSource {
         if (playerPosition == null) {
             throw new IllegalStateException("Map has no player");
         }
-        return new Level(width, rows.length, playerPosition, placements);
+        return new Level(width, rows.length, playerPosition, tankPositions, placements);
     }
 
     private String readMap() {
-        Path mapFile = Path.of(MAPS_DIRECTORY, mapName);
         try {
             return Files.readString(mapFile).trim();
         } catch (IOException e) {
