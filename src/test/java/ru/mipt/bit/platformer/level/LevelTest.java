@@ -8,6 +8,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LevelTest {
 
@@ -41,5 +42,30 @@ class LevelTest {
     @Test
     void placementRejectsATemplateWithoutAPosition() {
         assertThrows(NullPointerException.class, () -> new Placement(new TreeTemplate(), null));
+    }
+
+    @Test
+    void hasNoTanksWhenBuiltWithoutThem() {
+        Level level = new Level(5, 5, new GridPoint2(0, 0), List.of());
+
+        assertTrue(level.getTankPositions().isEmpty());
+    }
+
+    @Test
+    void copiesTheTankPositionsItWasGiven() {
+        List<GridPoint2> positions = new ArrayList<>();
+        positions.add(new GridPoint2(1, 1));
+        Level level = new Level(5, 5, new GridPoint2(0, 0), positions, List.of());
+
+        positions.add(new GridPoint2(2, 2));
+
+        assertEquals(1, level.getTankPositions().size());
+    }
+
+    @Test
+    void tankPositionsCannotBeModifiedThroughTheGetter() {
+        Level level = new Level(5, 5, new GridPoint2(0, 0), List.of(new GridPoint2(1, 1)), List.of());
+
+        assertThrows(UnsupportedOperationException.class, () -> level.getTankPositions().clear());
     }
 }

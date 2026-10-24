@@ -77,4 +77,14 @@ class GameObjectTest {
 
         assertEquals(0f, object.getCollisionShape().boundingRectangle().x, 0.01f);
     }
+
+    @Test
+    void updateDoesNothingForAPlainObject() {
+        GameObject object = new GameObject(new RectangleShape(new Rectangle(0, 0, 100, 100)), new GridPoint2(2, 3));
+
+        object.update(1f);
+
+        assertEquals(new GridPoint2(2, 3), object.getCurrentPosition());
+        assertEquals(0f, object.getCurrentRotation());
+    }
 }

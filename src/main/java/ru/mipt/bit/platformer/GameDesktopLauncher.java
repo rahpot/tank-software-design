@@ -1,6 +1,7 @@
 package ru.mipt.bit.platformer;
 
 import ru.mipt.bit.platformer.collision.PlacementRule;
+import ru.mipt.bit.platformer.control.AiController;
 import ru.mipt.bit.platformer.control.GdxKeyboardInput;
 import ru.mipt.bit.platformer.control.InputConfig;
 import ru.mipt.bit.platformer.control.InputHandler;
@@ -9,11 +10,14 @@ import ru.mipt.bit.platformer.graphics.GroundLayer;
 import ru.mipt.bit.platformer.graphics.TextureRepository;
 import ru.mipt.bit.platformer.level.Level;
 import ru.mipt.bit.platformer.level.LevelBuilder;
+import ru.mipt.bit.platformer.level.LevelObjects;
 import ru.mipt.bit.platformer.level.LevelParserFromFile;
 import ru.mipt.bit.platformer.level.LevelSource;
 import ru.mipt.bit.platformer.level.RandomLevelSource;
+import ru.mipt.bit.platformer.strategy.RandomMoveStrategy;
 import ru.mipt.bit.platformer.world.GameWorld;
-import ru.mipt.bit.platformer.world.PlayerObject;
+import ru.mipt.bit.platformer.world.Player;
+import ru.mipt.bit.platformer.world.Tank;
 import ru.mipt.bit.platformer.util.TileMovement;
 
 import com.badlogic.gdx.ApplicationListener;
@@ -48,8 +52,9 @@ public class GameDesktopLauncher implements ApplicationListener {
     private TextureRepository textureRepository;
     private PlacementRule placementRule;
     private GameWorld gameWorld;
-    private PlayerObject player;
+    private Player player;
     private InputHandler inputHandler;
+    private AiController aiController;
 
     public GameDesktopLauncher(Level level) {
         this.level = level;
@@ -64,13 +69,19 @@ public class GameDesktopLauncher implements ApplicationListener {
         groundRenderer = createSingleLayerMapRenderer(ground, batch);
         tileMovement = new TileMovement(getSingleLayer(ground), MOVEMENT_INTERPOLATION);
 
-        placementRule = new PlacementRule(tileMovement);
+        placementRule = new PlacementRule(tileMovement, level.getWidth(), level.getHeight());
         GameRender gameRender = new GameRender(batch, tileMovement);
         gameWorld = new GameWorld(placementRule, gameRender);
 
-        player = new LevelBuilder(textureRepository).build(level, gameWorld);
+        LevelObjects levelObjects = new LevelBuilder(textureRepository).build(level, gameWorld);
+        player = levelObjects.getPlayer();
 
         inputHandler = new InputHandler(new GdxKeyboardInput(), InputConfig.defaultControls(player, gameWorld));
+
+        aiController = new AiController(gameWorld);
+        for (Tank tank : levelObjects.getAiTanks()) {
+            aiController.register(tank, new RandomMoveStrategy());
+        }
     }
 
     @Override
@@ -81,8 +92,9 @@ public class GameDesktopLauncher implements ApplicationListener {
         float deltaTime = Gdx.graphics.getDeltaTime();
 
         inputHandler.handleInput();
+        aiController.controlTanks();
 
-        player.update(deltaTime);
+        gameWorld.update(deltaTime);
 
         groundRenderer.render();
 
