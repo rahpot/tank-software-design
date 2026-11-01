@@ -37,7 +37,8 @@ class InputConfigTest {
         Map<Integer, Command> controls = InputConfig.defaultControls(newPlayer(), NOTHING_IN_THE_WAY);
 
         assertTrue(controls.keySet().containsAll(List.of(UP, W, LEFT, A, DOWN, S, RIGHT, D)));
-        assertEquals(8, controls.size());
+        assertTrue(controls.containsKey(com.badlogic.gdx.Input.Keys.SPACE));
+        assertEquals(9, controls.size());
     }
 
     @Test

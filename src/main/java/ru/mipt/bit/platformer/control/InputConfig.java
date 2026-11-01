@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.control;
 
 import ru.mipt.bit.platformer.command.Command;
 import ru.mipt.bit.platformer.command.MoveCommand;
+import ru.mipt.bit.platformer.command.ShootCommand;
 import ru.mipt.bit.platformer.world.Direction;
 import ru.mipt.bit.platformer.world.Obstacles;
 import ru.mipt.bit.platformer.world.Tank;
@@ -22,6 +23,7 @@ public final class InputConfig {
         bindMovement(controls, LEFT, A, Direction.LEFT, player, obstacles);
         bindMovement(controls, DOWN, S, Direction.DOWN, player, obstacles);
         bindMovement(controls, RIGHT, D, Direction.RIGHT, player, obstacles);
+        controls.put(SPACE, new ShootCommand(player));
         return controls;
     }
 

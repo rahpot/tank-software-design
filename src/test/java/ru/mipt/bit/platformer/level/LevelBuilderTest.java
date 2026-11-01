@@ -77,8 +77,7 @@ class LevelBuilderTest {
     private final RecordingTextures textures = new RecordingTextures();
 
     private GameWorld newGameWorld() {
-        return new GameWorld(new PlacementRule(NO_TILE_MATH, 100, 100), objects -> {
-        });
+        return new GameWorld(new PlacementRule(NO_TILE_MATH, 100, 100));
     }
 
     @Test

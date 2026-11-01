@@ -28,7 +28,7 @@ public class AiController {
     public void controlTanks() {
         for (Map.Entry<Tank, Strategy> entry : controlledTanks.entrySet()) {
             Tank tank = entry.getKey();
-            if (tank.isMoving()) {
+            if (tank.getHealth() < 0 || tank.isMoving()) {
                 continue;
             }
             entry.getValue().nextCommand(tank, world).execute();

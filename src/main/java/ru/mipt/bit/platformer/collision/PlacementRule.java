@@ -41,7 +41,7 @@ public class PlacementRule {
         return true;
     }
 
-    private boolean isOutsideField(GridPoint2 cell) {
+    public boolean isOutsideField(GridPoint2 cell) {
         return cell.x < 0 || cell.y < 0 || cell.x >= fieldWidth || cell.y >= fieldHeight;
     }
 

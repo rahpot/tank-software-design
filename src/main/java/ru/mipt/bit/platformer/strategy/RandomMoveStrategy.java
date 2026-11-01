@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.strategy;
 
 import ru.mipt.bit.platformer.command.Command;
 import ru.mipt.bit.platformer.command.MoveCommand;
+import ru.mipt.bit.platformer.command.ShootCommand;
 import ru.mipt.bit.platformer.world.Direction;
 import ru.mipt.bit.platformer.world.Tank;
 import ru.mipt.bit.platformer.world.WorldView;
@@ -24,6 +25,9 @@ public class RandomMoveStrategy implements Strategy {
 
     @Override
     public Command nextCommand(Tank tank, WorldView world) {
-        return new MoveCommand(tank, DIRECTIONS[random.nextInt(DIRECTIONS.length)], world);
+        int choice = random.nextInt(DIRECTIONS.length + 1);
+        return choice == DIRECTIONS.length
+                ? new ShootCommand(tank)
+                : new MoveCommand(tank, DIRECTIONS[choice], world);
     }
 }
