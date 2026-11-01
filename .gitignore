@@ -15,3 +15,6 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 
 .idea
+
+# Compiled output from IDE builds
+bin/
