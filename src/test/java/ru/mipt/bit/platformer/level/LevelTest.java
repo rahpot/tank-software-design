@@ -19,7 +19,7 @@ class LevelTest {
     void copiesThePlacementsItWasGiven() {
         List<Placement> source = new ArrayList<>();
         source.add(newPlacement(new GridPoint2(1, 1)));
-        Level level = new Level(new GridPoint2(0, 0), source);
+        Level level = new Level(10, 8, new GridPoint2(0, 0), source);
 
         source.clear();
 
@@ -28,14 +28,14 @@ class LevelTest {
 
     @Test
     void placementsCannotBeModifiedThroughTheGetter() {
-        Level level = new Level(new GridPoint2(0, 0), List.of(newPlacement(new GridPoint2(1, 1))));
+        Level level = new Level(10, 8, new GridPoint2(0, 0), List.of(newPlacement(new GridPoint2(1, 1))));
 
         assertThrows(UnsupportedOperationException.class, () -> level.getPlacements().clear());
     }
 
     @Test
     void rejectsALevelWithoutAPlayerPosition() {
-        assertThrows(NullPointerException.class, () -> new Level(null, List.of()));
+        assertThrows(NullPointerException.class, () -> new Level(10, 8, null, List.of()));
     }
 
     @Test
