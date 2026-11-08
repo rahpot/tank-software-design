@@ -19,11 +19,11 @@ public class GameField {
         this.tileLayer = tileLayer;
     }
 
-    public void register(GameObject object) {
+    void register(GameObject object) {
         objects.add(object);
     }
 
-    public void unregister(GameObject object) {
+    void unregister(GameObject object) {
         objects.remove(object);
     }
 

@@ -16,19 +16,10 @@ import com.badlogic.gdx.math.Interpolation;
 
 import ru.mipt.bit.platformer.util.TileMovement;
 
-import java.util.Map;
-
-import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
 public class GameDesktopLauncher implements ApplicationListener {
-    private static final Map<Integer, Direction> CONTROLS = Map.of(
-            UP, Direction.UP, W, Direction.UP,
-            LEFT, Direction.LEFT, A, Direction.LEFT,
-            DOWN, Direction.DOWN, S, Direction.DOWN,
-            RIGHT, Direction.RIGHT, D, Direction.RIGHT
-    );
 
     private Batch batch;
 
@@ -38,7 +29,9 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     private TextureRepository textureRepository;
     private GameField gameField;
+    private GameWorld gameWorld;
     private PlayerObject player;
+    private InputHandler inputHandler;
 
     @Override
     public void create() {
@@ -51,14 +44,18 @@ public class GameDesktopLauncher implements ApplicationListener {
 
         textureRepository = new TextureRepository();
         gameField = new GameField(groundLayer);
+        GameRender gameRender = new GameRender(batch, tileMovement);
+        gameWorld = new GameWorld(gameField, gameRender);
 
         TextureRegion tankTexture = new TextureRegion(textureRepository.load("images/tank_blue.png"));
-        player = new PlayerObject(createBoundingRectangle(tankTexture), new GridPoint2(1, 1), tankTexture);
-        gameField.register(player);
+        player = new PlayerObject(createBoundingRectangle(tankTexture), new GridPoint2(1, 1));
+        gameWorld.spawn(player, tankTexture);
 
         TextureRegion treeTexture = new TextureRegion(textureRepository.load("images/greenTree.png"));
-        Tree tree = new Tree(createBoundingRectangle(treeTexture), new GridPoint2(1, 3), treeTexture);
-        gameField.register(tree);
+        Tree tree = new Tree(createBoundingRectangle(treeTexture), new GridPoint2(1, 3));
+        gameWorld.spawn(tree, treeTexture);
+
+        inputHandler = new InputHandler(InputConfig.defaultControls(player, gameField));
     }
 
     @Override
@@ -68,25 +65,13 @@ public class GameDesktopLauncher implements ApplicationListener {
 
         float deltaTime = Gdx.graphics.getDeltaTime();
 
-        for (Map.Entry<Integer, Direction> entry : CONTROLS.entrySet()) {
-            if (Gdx.input.isKeyPressed(entry.getKey())) {
-                player.move(entry.getValue(), gameField);
-                break;
-            }
-        }
+        inputHandler.handleInput();
 
         player.update(deltaTime);
 
         levelRenderer.render();
 
-        batch.begin();
-
-        for (GameObject object : gameField.getObjects()) {
-            drawTextureRegionUnscaled(batch, object.getTexture(),
-                    object.getRenderRectangle(tileMovement), object.getCurrentRotation());
-        }
-
-        batch.end();
+        gameWorld.render();
     }
 
     @Override

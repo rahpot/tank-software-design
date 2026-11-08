@@ -1,6 +1,5 @@
 package ru.mipt.bit.platformer;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Shape2D;
@@ -41,8 +40,8 @@ public class PlayerObject extends GameObject {
                 getCollisionRectangle(), getCurrentPosition(), playerDestinationCoordinates, playerMovementProgress);
     }
 
-    PlayerObject(Shape2D collisionShape, GridPoint2 position, TextureRegion texture) {
-        super(collisionShape, position, texture);
+    PlayerObject(Shape2D collisionShape, GridPoint2 position) {
+        super(collisionShape, position);
         this.playerDestinationCoordinates = new GridPoint2(position);
     }
 }
