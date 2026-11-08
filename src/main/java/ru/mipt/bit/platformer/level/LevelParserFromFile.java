@@ -3,6 +3,8 @@ package ru.mipt.bit.platformer.level;
 import com.badlogic.gdx.math.GridPoint2;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,7 +13,6 @@ import java.util.List;
 
 public class LevelParserFromFile implements LevelSource {
 
-    private static final String MAPS_DIRECTORY = "src/main/resources";
     private static final String DEFAULT_MAP = "MainObjLevel.txt";
 
     private static final char TREE = 'T';
@@ -19,17 +20,20 @@ public class LevelParserFromFile implements LevelSource {
     private static final char TANK = 'A';
 
     private final Path mapFile;
+    private final String mapResource;
 
     public LevelParserFromFile() {
         this(DEFAULT_MAP);
     }
 
     public LevelParserFromFile(String mapName) {
-        this(Path.of(MAPS_DIRECTORY, mapName));
+        this.mapFile = null;
+        this.mapResource = mapName;
     }
 
     public LevelParserFromFile(Path mapFile) {
         this.mapFile = mapFile;
+        this.mapResource = null;
     }
 
     @Override
@@ -52,13 +56,19 @@ public class LevelParserFromFile implements LevelSource {
                         placements.add(new Placement(new TreeTemplate(), new GridPoint2(x, y)));
                         break;
                     case PLAYER:
+                        if (playerPosition != null) {
+                            throw new IllegalStateException("Map has more than one player");
+                        }
                         playerPosition = new GridPoint2(x, y);
                         break;
                     case TANK:
                         tankPositions.add(new GridPoint2(x, y));
                         break;
-                    default:
+                    case '_':
                         break;
+                    default:
+                        throw new IllegalStateException("Unknown map symbol at row " + (row + 1)
+                                + ", column " + (x + 1) + ": " + rows[row].charAt(x));
                 }
             }
         }
@@ -71,9 +81,17 @@ public class LevelParserFromFile implements LevelSource {
 
     private String readMap() {
         try {
-            return Files.readString(mapFile).trim();
+            if (mapFile != null) {
+                return Files.readString(mapFile);
+            }
+            try (InputStream stream = LevelParserFromFile.class.getResourceAsStream("/" + mapResource)) {
+                if (stream == null) {
+                    throw new IOException("Resource not found: " + mapResource);
+                }
+                return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            }
         } catch (IOException e) {
-            throw new UncheckedIOException("Cannot read map " + mapFile, e);
+            throw new UncheckedIOException("Cannot read map " + (mapFile != null ? mapFile : mapResource), e);
         }
     }
 }

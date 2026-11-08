@@ -66,6 +66,23 @@ class LevelParserFromFileTest {
     }
 
     @Test
+    void rejectsMultiplePlayers() {
+        assertThrows(IllegalStateException.class, () -> parse("X_X"));
+    }
+
+    @Test
+    void rejectsUnknownMapSymbols() {
+        assertThrows(IllegalStateException.class, () -> parse("X?"));
+    }
+
+    @Test
+    void loadsTheBundledMapByName() {
+        Level level = new LevelParserFromFile("MainObjLevel.txt").load();
+
+        assertTrue(level.getWidth() > 0);
+    }
+
+    @Test
     void reportsAMissingMapFile() {
         Path missing = directory.resolve("absent.txt");
 

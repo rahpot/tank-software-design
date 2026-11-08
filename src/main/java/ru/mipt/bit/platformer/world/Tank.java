@@ -1,11 +1,9 @@
 package ru.mipt.bit.platformer.world;
 
 import ru.mipt.bit.platformer.collision.CollisionShape;
-import ru.mipt.bit.platformer.util.TilePlacement;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
 import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Rectangle;
 
 import java.util.List;
 
@@ -32,7 +30,7 @@ public class Tank extends GameObject {
     public void shoot() {
         if (world != null && health >= 0 && reloadTime <= 0f) {
             reloadTime = 0.4f;
-            world.spawn(new Bullet(direction.apply(getCurrentPosition()), direction, 50, 0.1f, this), null);
+            world.spawn(new Bullet(direction.apply(getCurrentPosition()), direction, 50, 0.1f, this));
         }
     }
 
@@ -71,7 +69,7 @@ public class Tank extends GameObject {
     @Override
     public List<GridPoint2> getOccupiedPositions() {
         if (isMoving()) {
-            return List.of(getCurrentPosition(), destinationCoordinates);
+            return List.of(getCurrentPosition(), getDestinationCoordinates());
         }
         return List.of(getCurrentPosition());
     }
@@ -80,10 +78,12 @@ public class Tank extends GameObject {
         return !isEqual(movementProgress, 1f);
     }
 
-    @Override
-    public Rectangle getRenderRectangle(TilePlacement tilePlacement) {
-        return tilePlacement.moveRectangleBetweenTileCenters(
-                getCollisionRectangle(), getCurrentPosition(), destinationCoordinates, movementProgress);
+    public GridPoint2 getDestinationCoordinates() {
+        return new GridPoint2(destinationCoordinates);
+    }
+
+    public float getMovementProgress() {
+        return movementProgress;
     }
 
     public Tank(CollisionShape collisionShape, GridPoint2 position, float movementSpeed) {

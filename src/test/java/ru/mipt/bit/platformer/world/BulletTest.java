@@ -27,13 +27,13 @@ class BulletTest {
 
     private Tank tank(int x, int y) {
         Tank tank = new Tank(shape, new GridPoint2(x, y));
-        world.spawn(tank, null);
+        world.spawn(tank);
         return tank;
     }
 
     private Bullet bullet(int x, int y, Direction direction, int damage) {
         Bullet bullet = new Bullet(new GridPoint2(x, y), direction, damage, 0.1f, null);
-        world.spawn(bullet, null);
+        world.spawn(bullet);
         return bullet;
     }
 
@@ -88,7 +88,7 @@ class BulletTest {
     @Test
     void treeAndOtherBulletStopBulletsAndBoundsRemoveThem() {
         Tree tree = new Tree(shape, new GridPoint2(4, 1));
-        world.spawn(tree, null);
+        world.spawn(tree);
         Bullet first = bullet(1, 1, Direction.RIGHT, 50);
         world.update(1f);
         assertEquals(java.util.List.of(tree), world.getObjects());

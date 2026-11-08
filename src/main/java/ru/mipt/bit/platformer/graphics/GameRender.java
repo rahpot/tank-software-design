@@ -1,5 +1,7 @@
 package ru.mipt.bit.platformer.graphics;
 
+import ru.mipt.bit.platformer.world.Bullet;
+import ru.mipt.bit.platformer.world.Tank;
 import ru.mipt.bit.platformer.world.WorldObject;
 import ru.mipt.bit.platformer.world.GameObject;
 import ru.mipt.bit.platformer.world.WorldListener;
@@ -7,6 +9,7 @@ import ru.mipt.bit.platformer.util.TilePlacement;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,8 +31,14 @@ public class GameRender implements Renderer, WorldListener {
     }
 
     @Override
-    public void added(GameObject object, TextureRegion texture) {
-        objects.add(new WorldObject(object, texture == null ? bulletTexture : texture));
+    public void added(GameObject object) {
+        if (object instanceof Bullet) {
+            register(object, bulletTexture);
+        }
+    }
+
+    public void register(GameObject object, TextureRegion texture) {
+        objects.add(new WorldObject(object, texture));
     }
 
     @Override
@@ -47,8 +56,17 @@ public class GameRender implements Renderer, WorldListener {
         for (WorldObject entry : objects) {
             GameObject object = entry.getObject();
             drawTextureRegionUnscaled(batch, entry.getTexture(),
-                    object.getRenderRectangle(tilePlacement), object.getCurrentRotation());
+                    renderRectangle(object), object.getCurrentRotation());
         }
         batch.end();
+    }
+    public Rectangle renderRectangle(GameObject object) {
+        Rectangle bounds = object.getCollisionShape().boundingRectangle();
+        if (object instanceof Tank) {
+            Tank tank = (Tank) object;
+            return tilePlacement.moveRectangleBetweenTileCenters(bounds, tank.getCurrentPosition(),
+                    tank.getDestinationCoordinates(), tank.getMovementProgress());
+        }
+        return tilePlacement.moveRectangleToTileCenter(bounds, object.getCurrentPosition());
     }
 }

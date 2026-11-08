@@ -77,7 +77,7 @@ public class GameDesktopLauncher implements ApplicationListener {
         gameWorld = new GameWorld(placementRule);
         gameWorld.subscribe(gameRender);
 
-        LevelObjects levelObjects = new LevelBuilder(textureRepository).build(level, gameWorld);
+        LevelObjects levelObjects = new LevelBuilder(textureRepository).build(level, gameWorld, gameRender::register);
         player = levelObjects.getPlayer();
 
         inputHandler = new InputHandler(new GdxKeyboardInput(), InputConfig.defaultControls(player, gameWorld));
