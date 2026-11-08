@@ -1,25 +1,27 @@
-package ru.mipt.bit.platformer;
+package ru.mipt.bit.platformer.world;
+
+import ru.mipt.bit.platformer.collision.CollisionShape;
+import ru.mipt.bit.platformer.util.TilePlacement;
+import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Shape2D;
 
-import ru.mipt.bit.platformer.util.TileMovement;
 
 import static com.badlogic.gdx.math.MathUtils.isEqual;
-import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
 public class PlayerObject extends GameObject {
 
-    private static final float MOVEMENT_SPEED = 0.4f;
+    private static final float DEFAULT_MOVEMENT_SPEED = 0.4f;
 
+    private final float movementSpeed;
     private GridPoint2 playerDestinationCoordinates;
     private float playerMovementProgress = 1f;
 
-    void move(Direction direction, GameField gameField) {
+    public void move(Direction direction, Obstacles obstacles) {
         if (isEqual(playerMovementProgress, 1f)) {
             GridPoint2 destination = direction.apply(getCurrentPosition());
-            if (gameField.isCellFree(this, destination)) {
+            if (obstacles.isCellFree(this, destination)) {
                 playerDestinationCoordinates = destination;
                 playerMovementProgress = 0f;
             }
@@ -28,20 +30,25 @@ public class PlayerObject extends GameObject {
     }
 
     public void update(float deltaTime) {
-        playerMovementProgress = continueProgress(playerMovementProgress, deltaTime, MOVEMENT_SPEED);
+        playerMovementProgress = continueProgress(playerMovementProgress, deltaTime, movementSpeed);
         if (isEqual(playerMovementProgress, 1f)) {
             setPosition(playerDestinationCoordinates);
         }
     }
 
     @Override
-    public Rectangle getRenderRectangle(TileMovement tileMovement) {
-        return tileMovement.moveRectangleBetweenTileCenters(
+    public Rectangle getRenderRectangle(TilePlacement tilePlacement) {
+        return tilePlacement.moveRectangleBetweenTileCenters(
                 getCollisionRectangle(), getCurrentPosition(), playerDestinationCoordinates, playerMovementProgress);
     }
 
-    PlayerObject(Shape2D collisionShape, GridPoint2 position) {
+    public PlayerObject(CollisionShape collisionShape, GridPoint2 position, float movementSpeed) {
         super(collisionShape, position);
         this.playerDestinationCoordinates = new GridPoint2(position);
+        this.movementSpeed = movementSpeed;
+    }
+
+    public PlayerObject(CollisionShape collisionShape, GridPoint2 position) {
+        this(collisionShape, position, DEFAULT_MOVEMENT_SPEED);
     }
 }

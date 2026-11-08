@@ -1,5 +1,7 @@
 package ru.mipt.bit.platformer.util;
 
+import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
+
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.GridPoint2;
@@ -11,9 +13,6 @@ import java.util.NoSuchElementException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
-import static ru.mipt.bit.platformer.util.GdxGameUtils.getSingleLayer;
-import static ru.mipt.bit.platformer.util.GdxGameUtils.moveRectangleAtTileCenter;
 
 class GdxGameUtilsTest {
 
