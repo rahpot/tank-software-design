@@ -12,11 +12,12 @@ import static com.badlogic.gdx.math.MathUtils.isEqual;
 
 public class Tank extends GameObject {
 
+    public static final int MAX_HEALTH = 100;
     protected static final float DEFAULT_MOVEMENT_SPEED = 0.4f;
 
     private final float movementSpeed;
     private Direction direction = Direction.RIGHT;
-    private int health = 100;
+    private int health = MAX_HEALTH;
     private float reloadTime;
     private GridPoint2 destinationCoordinates;
     private float movementProgress = 1f;

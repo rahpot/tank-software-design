@@ -27,6 +27,10 @@ public final class InputConfig {
         return controls;
     }
 
+    public static void bindHealthBars(InputHandler input, Command toggleHealthBars) {
+        input.registerOnPress(L, toggleHealthBars);
+    }
+
     private static void bindMovement(Map<Integer, Command> controls, int arrowKey, int letterKey,
                                      Direction direction, Tank player, Obstacles obstacles) {
         Command move = new MoveCommand(player, direction, obstacles);

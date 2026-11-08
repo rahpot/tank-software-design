@@ -1,12 +1,14 @@
 package ru.mipt.bit.platformer;
 
 import ru.mipt.bit.platformer.collision.PlacementRule;
+import ru.mipt.bit.platformer.command.ToggleHealthBarsCommand;
 import ru.mipt.bit.platformer.control.AiController;
 import ru.mipt.bit.platformer.control.GdxKeyboardInput;
 import ru.mipt.bit.platformer.control.InputConfig;
 import ru.mipt.bit.platformer.control.InputHandler;
 import ru.mipt.bit.platformer.graphics.GameRender;
 import ru.mipt.bit.platformer.graphics.GroundLayer;
+import ru.mipt.bit.platformer.graphics.HealthBarRenderer;
 import ru.mipt.bit.platformer.graphics.TextureRepository;
 import ru.mipt.bit.platformer.level.Level;
 import ru.mipt.bit.platformer.level.LevelBuilder;
@@ -28,6 +30,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Interpolation;
@@ -43,6 +46,8 @@ public class GameDesktopLauncher implements ApplicationListener {
     private static final Color BACKGROUND_COLOR = new Color(0f, 0f, 0.2f, 1f);
 
     private Batch batch;
+    private ShapeRenderer healthBarShapes;
+    private HealthBarRenderer healthBars;
 
     private TiledMap ground;
     private MapRenderer groundRenderer;
@@ -74,6 +79,8 @@ public class GameDesktopLauncher implements ApplicationListener {
         placementRule = new PlacementRule(tileMovement, level.getWidth(), level.getHeight());
         gameRender = new GameRender(batch, tileMovement,
                 new TextureRegion(textureRepository.load("images/brick.png"), 0, 0, 12, 6));
+        healthBarShapes = new ShapeRenderer();
+        healthBars = new HealthBarRenderer(gameRender, healthBarShapes);
         gameWorld = new GameWorld(placementRule);
         gameWorld.subscribe(gameRender);
 
@@ -81,6 +88,8 @@ public class GameDesktopLauncher implements ApplicationListener {
         player = levelObjects.getPlayer();
 
         inputHandler = new InputHandler(new GdxKeyboardInput(), InputConfig.defaultControls(player, gameWorld));
+
+        InputConfig.bindHealthBars(inputHandler, new ToggleHealthBarsCommand(healthBars));
 
         aiController = new AiController(gameWorld);
         for (Tank tank : levelObjects.getAiTanks()) {
@@ -102,7 +111,8 @@ public class GameDesktopLauncher implements ApplicationListener {
 
         groundRenderer.render();
 
-        gameRender.render();
+        healthBarShapes.setProjectionMatrix(batch.getProjectionMatrix());
+        healthBars.render(gameRender.getObjects());
     }
 
     @Override
@@ -124,6 +134,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     public void dispose() {
         textureRepository.dispose();
         ground.dispose();
+        healthBarShapes.dispose();
         batch.dispose();
     }
 

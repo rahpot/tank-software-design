@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.Rectangle;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.drawTextureRegionUnscaled;
@@ -44,6 +45,10 @@ public class GameRender implements Renderer, WorldListener {
     @Override
     public void removed(GameObject object) {
         objects.removeIf(entry -> entry.getObject() == object);
+    }
+
+    public List<WorldObject> getObjects() {
+        return Collections.unmodifiableList(objects);
     }
 
     public void render() {
