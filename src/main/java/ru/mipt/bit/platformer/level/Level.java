@@ -13,15 +13,23 @@ public final class Level {
     private final int width;
     private final int height;
     private final GridPoint2 playerPosition;
+    private final List<GridPoint2> tankPositions;
     private final List<Placement> placements;
 
     public Level(int width, int height, GridPoint2 playerPosition, Collection<Placement> placements) {
+        this(width, height, playerPosition, List.of(), placements);
+    }
+
+    public Level(int width, int height, GridPoint2 playerPosition,
+                 Collection<GridPoint2> tankPositions, Collection<Placement> placements) {
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException("Level size must be positive");
         }
         this.width = width;
         this.height = height;
         this.playerPosition = Objects.requireNonNull(playerPosition, "playerPosition");
+        this.tankPositions = Collections.unmodifiableList(
+                new ArrayList<>(Objects.requireNonNull(tankPositions, "tankPositions")));
         this.placements = Collections.unmodifiableList(
                 new ArrayList<>(Objects.requireNonNull(placements, "placements")));
     }
@@ -36,6 +44,10 @@ public final class Level {
 
     public GridPoint2 getPlayerPosition() {
         return playerPosition;
+    }
+
+    public List<GridPoint2> getTankPositions() {
+        return tankPositions;
     }
 
     public List<Placement> getPlacements() {

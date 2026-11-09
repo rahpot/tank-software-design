@@ -1,5 +1,7 @@
 package ru.mipt.bit.platformer.control;
 
+import ru.mipt.bit.platformer.command.Command;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
@@ -20,7 +22,7 @@ class InputHandlerTest {
     }
 
     @Test
-    void runsActionBoundToPressedKey() {
+    void runsCommandBoundToPressedKey() {
         boolean[] executed = {false};
         InputHandler inputHandler = new InputHandler(pressed(42), Map.of(42, () -> executed[0] = true));
 
@@ -30,7 +32,7 @@ class InputHandlerTest {
     }
 
     @Test
-    void doesNotRunActionForUnpressedKey() {
+    void doesNotRunCommandForUnpressedKey() {
         boolean[] executed = {false};
         InputHandler inputHandler = new InputHandler(NOTHING_PRESSED, Map.of(42, () -> executed[0] = true));
 
@@ -40,8 +42,8 @@ class InputHandlerTest {
     }
 
     @Test
-    void runsAllActionsForSimultaneouslyPressedKeys() {
-        Map<Integer, Runnable> bindings = new LinkedHashMap<>();
+    void runsAllCommandsForSimultaneouslyPressedKeys() {
+        Map<Integer, Command> bindings = new LinkedHashMap<>();
         int[] executedCount = {0};
         bindings.put(1, () -> executedCount[0]++);
         bindings.put(2, () -> executedCount[0]++);
@@ -53,8 +55,8 @@ class InputHandlerTest {
     }
 
     @Test
-    void runsBoundActionsOnlyForKeysThatAreActuallyHeld() {
-        Map<Integer, Runnable> bindings = new LinkedHashMap<>();
+    void runsBoundCommandsOnlyForKeysThatAreActuallyHeld() {
+        Map<Integer, Command> bindings = new LinkedHashMap<>();
         int[] executedCount = {0};
         bindings.put(1, () -> executedCount[0]++);
         bindings.put(2, () -> executedCount[0]++);
