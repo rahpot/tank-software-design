@@ -15,16 +15,18 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PlacementRuleTest {
+
+    private final TiledMapTileLayer tileLayer = new TiledMapTileLayer(10, 10, 128, 128);
 
     private PlacementRule placementRule;
 
     @BeforeEach
     void setUp() {
-        TiledMapTileLayer tileLayer = new TiledMapTileLayer(10, 10, 128, 128);
-        placementRule = new PlacementRule(new TileMovement(tileLayer, Interpolation.linear));
+        placementRule = new PlacementRule(new TileMovement(tileLayer, Interpolation.linear), 10, 10);
     }
 
     private GameObject newObject(GridPoint2 position) {
@@ -86,5 +88,31 @@ class PlacementRuleTest {
 
         assertEquals(new GridPoint2(0, 0), mover.getCurrentPosition());
         assertEquals(0f, mover.getCollisionShape().boundingRectangle().x, 0.01f);
+    }
+
+    @Test
+    void cellsOutsideTheFieldAreNeverFree() {
+        GameObject mover = newObject(new GridPoint2(0, 0));
+
+        assertFalse(placementRule.isCellFree(mover, new GridPoint2(-1, 0), List.of(mover)));
+        assertFalse(placementRule.isCellFree(mover, new GridPoint2(0, -1), List.of(mover)));
+        assertFalse(placementRule.isCellFree(mover, new GridPoint2(10, 0), List.of(mover)));
+        assertFalse(placementRule.isCellFree(mover, new GridPoint2(0, 10), List.of(mover)));
+    }
+
+    @Test
+    void cellsOnTheEdgeOfTheFieldAreStillFree() {
+        GameObject mover = newObject(new GridPoint2(1, 1));
+
+        assertTrue(placementRule.isCellFree(mover, new GridPoint2(0, 0), List.of(mover)));
+        assertTrue(placementRule.isCellFree(mover, new GridPoint2(9, 9), List.of(mover)));
+    }
+
+    @Test
+    void rejectsANonPositiveFieldSize() {
+        TileMovement tileMovement = new TileMovement(tileLayer, Interpolation.linear);
+
+        assertThrows(IllegalArgumentException.class, () -> new PlacementRule(tileMovement, 0, 10));
+        assertThrows(IllegalArgumentException.class, () -> new PlacementRule(tileMovement, 10, -1));
     }
 }

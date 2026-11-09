@@ -1,9 +1,10 @@
 package ru.mipt.bit.platformer.control;
 
 import ru.mipt.bit.platformer.collision.RectangleShape;
+import ru.mipt.bit.platformer.command.Command;
 import ru.mipt.bit.platformer.world.Direction;
 import ru.mipt.bit.platformer.world.Obstacles;
-import ru.mipt.bit.platformer.world.PlayerObject;
+import ru.mipt.bit.platformer.world.Tank;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
@@ -27,54 +28,55 @@ class InputConfigTest {
 
     private static final Obstacles NOTHING_IN_THE_WAY = (mover, destination) -> true;
 
-    private PlayerObject newPlayer() {
-        return new PlayerObject(new RectangleShape(new Rectangle(0, 0, 100, 100)), new GridPoint2(1, 1));
+    private Tank newPlayer() {
+        return new Tank(new RectangleShape(new Rectangle(0, 0, 100, 100)), new GridPoint2(1, 1));
     }
 
     @Test
     void bindsAllMovementKeys() {
-        Map<Integer, Runnable> controls = InputConfig.defaultControls(newPlayer(), NOTHING_IN_THE_WAY);
+        Map<Integer, Command> controls = InputConfig.defaultControls(newPlayer(), NOTHING_IN_THE_WAY);
 
         assertTrue(controls.keySet().containsAll(List.of(UP, W, LEFT, A, DOWN, S, RIGHT, D)));
-        assertEquals(8, controls.size());
+        assertTrue(controls.containsKey(com.badlogic.gdx.Input.Keys.SPACE));
+        assertEquals(9, controls.size());
     }
 
     @Test
     void upAndWTurnPlayerUp() {
-        PlayerObject player = newPlayer();
-        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
+        Tank player = newPlayer();
+        Map<Integer, Command> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
 
-        controls.get(UP).run();
+        controls.get(UP).execute();
 
         assertEquals(Direction.UP.getRotationAngle(), player.getCurrentRotation());
     }
 
     @Test
     void leftAndATurnPlayerLeft() {
-        PlayerObject player = newPlayer();
-        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
+        Tank player = newPlayer();
+        Map<Integer, Command> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
 
-        controls.get(A).run();
+        controls.get(A).execute();
 
         assertEquals(Direction.LEFT.getRotationAngle(), player.getCurrentRotation());
     }
 
     @Test
     void downAndSTurnPlayerDown() {
-        PlayerObject player = newPlayer();
-        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
+        Tank player = newPlayer();
+        Map<Integer, Command> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
 
-        controls.get(S).run();
+        controls.get(S).execute();
 
         assertEquals(Direction.DOWN.getRotationAngle(), player.getCurrentRotation());
     }
 
     @Test
     void rightAndDTurnPlayerRight() {
-        PlayerObject player = newPlayer();
-        Map<Integer, Runnable> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
+        Tank player = newPlayer();
+        Map<Integer, Command> controls = InputConfig.defaultControls(player, NOTHING_IN_THE_WAY);
 
-        controls.get(D).run();
+        controls.get(D).execute();
 
         assertEquals(Direction.RIGHT.getRotationAngle(), player.getCurrentRotation());
     }
