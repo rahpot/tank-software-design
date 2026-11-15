@@ -18,6 +18,7 @@ import java.util.List;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,7 +41,7 @@ class GameWorldTest {
 
     private GameWorld newGameWorld() {
         TileMovement tileMovement = new TileMovement(new TiledMapTileLayer(10, 10, 128, 128), Interpolation.linear);
-        return new GameWorld(new PlacementRule(tileMovement), renderer);
+        return new GameWorld(new PlacementRule(tileMovement, 10, 10), renderer);
     }
 
     private GameObject newObject(GridPoint2 position) {
@@ -133,12 +134,59 @@ class GameWorldTest {
     }
 
     @Test
+    void getObjectsReturnsTheSameViewAcrossCallsWithoutCopying() {
+        GameWorld gameWorld = newGameWorld();
+        gameWorld.spawn(newObject(new GridPoint2(0, 0)), mock(TextureRegion.class));
+
+        assertSame(gameWorld.getObjects(), gameWorld.getObjects());
+    }
+
+    @Test
     void getObjectsDoesNotExposeTheInternalRegistry() {
         GameWorld gameWorld = newGameWorld();
         gameWorld.spawn(newObject(new GridPoint2(0, 0)), mock(TextureRegion.class));
 
-        gameWorld.getObjects().clear();
-
+        assertThrows(UnsupportedOperationException.class, () -> gameWorld.getObjects().clear());
         assertEquals(1, gameWorld.getObjects().size());
+    }
+
+    @Test
+    void updateAdvancesEveryTankInTheWorld() {
+        GameWorld gameWorld = newGameWorld();
+        Tank first = new Tank(new RectangleShape(new Rectangle(0, 0, 100, 100)), new GridPoint2(0, 0));
+        Tank second = new Tank(new RectangleShape(new Rectangle(0, 0, 100, 100)), new GridPoint2(5, 5));
+        gameWorld.spawn(first, mock(TextureRegion.class));
+        gameWorld.spawn(second, mock(TextureRegion.class));
+        first.move(Direction.RIGHT, gameWorld);
+        second.move(Direction.UP, gameWorld);
+
+        gameWorld.update(1f);
+
+        assertEquals(new GridPoint2(1, 0), first.getCurrentPosition());
+        assertEquals(new GridPoint2(5, 6), second.getCurrentPosition());
+    }
+
+    @Test
+    void updateLeavesStaticObjectsAlone() {
+        GameWorld gameWorld = newGameWorld();
+        GameObject tree = newObject(new GridPoint2(3, 3));
+        gameWorld.spawn(tree, mock(TextureRegion.class));
+
+        gameWorld.update(1f);
+
+        assertEquals(new GridPoint2(3, 3), tree.getCurrentPosition());
+    }
+
+    @Test
+    void updateDoesNotTouchDestroyedObjects() {
+        GameWorld gameWorld = newGameWorld();
+        Tank tank = new Tank(new RectangleShape(new Rectangle(0, 0, 100, 100)), new GridPoint2(0, 0));
+        gameWorld.spawn(tank, mock(TextureRegion.class));
+        tank.move(Direction.RIGHT, gameWorld);
+
+        gameWorld.destroy(tank);
+        gameWorld.update(1f);
+
+        assertEquals(new GridPoint2(0, 0), tank.getCurrentPosition());
     }
 }

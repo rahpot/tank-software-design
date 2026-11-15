@@ -5,7 +5,7 @@ import ru.mipt.bit.platformer.collision.RectangleShape;
 import ru.mipt.bit.platformer.graphics.TextureSource;
 import ru.mipt.bit.platformer.world.GameObject;
 import ru.mipt.bit.platformer.world.GameWorld;
-import ru.mipt.bit.platformer.world.PlayerObject;
+import ru.mipt.bit.platformer.world.Player;
 import ru.mipt.bit.platformer.util.TilePlacement;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -19,6 +19,7 @@ import java.util.List;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -76,7 +77,7 @@ class LevelBuilderTest {
     private final RecordingTextures textures = new RecordingTextures();
 
     private GameWorld newGameWorld() {
-        return new GameWorld(new PlacementRule(NO_TILE_MATH), objects -> {
+        return new GameWorld(new PlacementRule(NO_TILE_MATH, 100, 100), objects -> {
         });
     }
 
@@ -85,7 +86,7 @@ class LevelBuilderTest {
         GameWorld gameWorld = newGameWorld();
         Level level = new Level(10, 8, new GridPoint2(3, 4), List.of());
 
-        PlayerObject player = new LevelBuilder(textures).build(level, gameWorld);
+        Player player = new LevelBuilder(textures).build(level, gameWorld).getPlayer();
 
         assertEquals(new GridPoint2(3, 4), player.getCurrentPosition());
         assertEquals(List.of(player), gameWorld.getObjects());
@@ -134,8 +135,52 @@ class LevelBuilderTest {
         GameWorld gameWorld = newGameWorld();
         Level level = new Level(10, 8, new GridPoint2(2, 2), List.of());
 
-        PlayerObject player = new LevelBuilder(textures).build(level, gameWorld);
+        Player player = new LevelBuilder(textures).build(level, gameWorld).getPlayer();
 
         assertSame(player, gameWorld.getObjects().get(0));
+    }
+
+    @Test
+    void everyTankPositionBecomesAnAiTank() {
+        GameWorld gameWorld = newGameWorld();
+        Level level = new Level(10, 8, new GridPoint2(0, 0),
+                List.of(new GridPoint2(2, 2), new GridPoint2(5, 5)), List.of());
+
+        LevelObjects objects = new LevelBuilder(textures).build(level, gameWorld);
+
+        assertEquals(2, objects.getAiTanks().size());
+        assertEquals(new GridPoint2(2, 2), objects.getAiTanks().get(0).getCurrentPosition());
+        assertEquals(new GridPoint2(5, 5), objects.getAiTanks().get(1).getCurrentPosition());
+    }
+
+    @Test
+    void aiTanksAreSpawnedIntoTheWorld() {
+        GameWorld gameWorld = newGameWorld();
+        Level level = new Level(10, 8, new GridPoint2(0, 0), List.of(new GridPoint2(2, 2)), List.of());
+
+        LevelObjects objects = new LevelBuilder(textures).build(level, gameWorld);
+
+        assertTrue(gameWorld.getObjects().containsAll(objects.getAiTanks()));
+        assertEquals(2, gameWorld.getObjects().size());
+    }
+
+    @Test
+    void thePlayerIsNotListedAmongAiTanks() {
+        GameWorld gameWorld = newGameWorld();
+        Level level = new Level(10, 8, new GridPoint2(0, 0), List.of(new GridPoint2(2, 2)), List.of());
+
+        LevelObjects objects = new LevelBuilder(textures).build(level, gameWorld);
+
+        assertFalse(objects.getAiTanks().contains(objects.getPlayer()));
+    }
+
+    @Test
+    void doesNotLoadTheTankTextureWhenThereAreNoTanks() {
+        GameWorld gameWorld = newGameWorld();
+        Level level = new Level(10, 8, new GridPoint2(0, 0), List.of());
+
+        new LevelBuilder(textures, "images/tank_green.png").build(level, gameWorld);
+
+        assertEquals(List.of("images/tank_green.png"), textures.requested);
     }
 }
