@@ -1,10 +1,8 @@
 package ru.mipt.bit.platformer.world;
 
 import ru.mipt.bit.platformer.collision.CollisionShape;
-import ru.mipt.bit.platformer.util.TilePlacement;
 
 import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Rectangle;
 
 import java.util.List;
 
@@ -16,11 +14,11 @@ public class GameObject {
     private float rotation;
 
     public GridPoint2 getCurrentPosition () {
-        return this.position;
+        return new GridPoint2(position);
     }
 
     protected void setPosition (GridPoint2 position) {
-        this.position = position;
+        this.position = new GridPoint2(position);
     }
 
     public CollisionShape getCollisionShape () {
@@ -52,17 +50,9 @@ public class GameObject {
         this.rotation = finishDirection.getRotationAngle();
     }
 
-    protected Rectangle getCollisionRectangle () {
-        return collisionShape.boundingRectangle();
-    }
-
-    public Rectangle getRenderRectangle (TilePlacement tilePlacement) {
-        return tilePlacement.moveRectangleToTileCenter(getCollisionRectangle(), position);
-    }
-
     public GameObject(CollisionShape collisionShape, GridPoint2 position, float rotation) {
         this.collisionShape = collisionShape;
-        this.position = position;
+        this.position = new GridPoint2(position);
         this.rotation = rotation;
     }
 

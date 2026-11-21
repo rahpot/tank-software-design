@@ -11,7 +11,7 @@ public final class Placement {
 
     public Placement(ObjectTemplate template, GridPoint2 position) {
         this.template = Objects.requireNonNull(template, "template");
-        this.position = Objects.requireNonNull(position, "position");
+        this.position = new GridPoint2(Objects.requireNonNull(position, "position"));
     }
 
     public ObjectTemplate getTemplate() {
@@ -19,6 +19,6 @@ public final class Placement {
     }
 
     public GridPoint2 getPosition() {
-        return position;
+        return new GridPoint2(position);
     }
 }

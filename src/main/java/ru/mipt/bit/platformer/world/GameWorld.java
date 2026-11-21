@@ -2,7 +2,6 @@ package ru.mipt.bit.platformer.world;
 
 import ru.mipt.bit.platformer.collision.PlacementRule;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
 
 import java.util.ArrayList;
@@ -24,11 +23,11 @@ public class GameWorld implements World {
         listeners.add(listener);
     }
 
-    public void spawn(GameObject object, TextureRegion texture) {
+    public void spawn(GameObject object) {
         gameObjects.add(object);
         object.world = this;
         for (WorldListener listener : List.copyOf(listeners)) {
-            listener.added(object, texture);
+            listener.added(object);
         }
         resolveCollisions();
     }

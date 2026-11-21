@@ -1,5 +1,6 @@
 package ru.mipt.bit.platformer.world;
 
+import ru.mipt.bit.platformer.graphics.GameRender;
 import ru.mipt.bit.platformer.collision.RectangleShape;
 import ru.mipt.bit.platformer.util.TileMovement;
 
@@ -63,7 +64,7 @@ class GameObjectTest {
         GameObject object = new GameObject(newShape(), new GridPoint2(1, 0));
         TileMovement tileMovement = newTileMovement();
 
-        Rectangle rendered = object.getRenderRectangle(tileMovement);
+        Rectangle rendered = new GameRender(null, tileMovement, null).renderRectangle(object);
 
         assertEquals(142f, rendered.x, 0.01f);
         assertEquals(14f, rendered.y, 0.01f);
@@ -73,9 +74,20 @@ class GameObjectTest {
     void renderingDoesNotMutateTheCollisionShape() {
         GameObject object = new GameObject(newShape(), new GridPoint2(1, 0));
 
-        object.getRenderRectangle(newTileMovement());
+        new GameRender(null, newTileMovement(), null).renderRectangle(object);
 
         assertEquals(0f, object.getCollisionShape().boundingRectangle().x, 0.01f);
+    }
+
+    @Test
+    void positionIsProtectedFromExternalChanges() {
+        GridPoint2 position = new GridPoint2(1, 2);
+        GameObject object = new GameObject(newShape(), position);
+
+        position.set(3, 4);
+        object.getCurrentPosition().set(5, 6);
+
+        assertEquals(new GridPoint2(1, 2), object.getCurrentPosition());
     }
 
     @Test

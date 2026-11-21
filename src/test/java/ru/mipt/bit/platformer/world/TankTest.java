@@ -1,5 +1,6 @@
 package ru.mipt.bit.platformer.world;
 
+import ru.mipt.bit.platformer.graphics.GameRender;
 import ru.mipt.bit.platformer.collision.PlacementRule;
 import ru.mipt.bit.platformer.collision.RectangleShape;
 import ru.mipt.bit.platformer.util.TileMovement;
@@ -89,7 +90,7 @@ class TankTest {
         tank.move(Direction.RIGHT, NOTHING_IN_THE_WAY);
         tank.update(0.2f);
 
-        Rectangle rendered = tank.getRenderRectangle(tileMovement);
+        Rectangle rendered = new GameRender(null, tileMovement, null).renderRectangle(tank);
 
         assertEquals(206f, rendered.x, 0.01f);
         assertEquals(142f, rendered.y, 0.01f);

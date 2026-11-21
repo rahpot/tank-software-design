@@ -29,16 +29,16 @@ class GameWorldTest {
 
     private static class RecordingRenderer implements WorldListener {
 
-        private final List<WorldObject> lastRendered = new ArrayList<>();
+        private final List<GameObject> lastRendered = new ArrayList<>();
 
         @Override
-        public void added(GameObject object, TextureRegion texture) {
-            lastRendered.add(new WorldObject(object, texture));
+        public void added(GameObject object) {
+            lastRendered.add(object);
         }
 
         @Override
         public void removed(GameObject object) {
-            lastRendered.removeIf(entry -> entry.getObject() == object);
+            lastRendered.removeIf(entry -> entry == object);
         }
     }
 
@@ -70,7 +70,7 @@ class GameWorldTest {
         };
         world.subscribe(graphics);
         Level level = new Level(10, 10, new GridPoint2(1, 1), List.of());
-        Player player = new LevelBuilder(path -> texture).build(level, world).getPlayer();
+        Player player = new LevelBuilder(path -> texture).build(level, world, graphics::register).getPlayer();
         player.shoot();
 
         graphics.render();
@@ -90,29 +90,26 @@ class GameWorldTest {
         GameWorld gameWorld = newGameWorld();
         GameObject object = newObject(new GridPoint2(0, 0));
 
-        gameWorld.spawn(object, mock(TextureRegion.class));
+        gameWorld.spawn(object);
 
         assertEquals(List.of(object), gameWorld.getObjects());
     }
 
     @Test
-    void spawnNotifiesObserverWithObjectAndTexture() {
+    void spawnNotifiesObserverWithObject() {
         GameWorld gameWorld = newGameWorld();
         GameObject object = newObject(new GridPoint2(0, 0));
-        TextureRegion texture = mock(TextureRegion.class);
-        gameWorld.spawn(object, texture);
-
+        gameWorld.spawn(object);
 
         assertEquals(1, renderer.lastRendered.size());
-        assertSame(object, renderer.lastRendered.get(0).getObject());
-        assertSame(texture, renderer.lastRendered.get(0).getTexture());
+        assertSame(object, renderer.lastRendered.get(0));
     }
 
     @Test
     void destroyRemovesTheObjectFromTheWorld() {
         GameWorld gameWorld = newGameWorld();
         GameObject object = newObject(new GridPoint2(0, 0));
-        gameWorld.spawn(object, mock(TextureRegion.class));
+        gameWorld.spawn(object);
 
         gameWorld.destroy(object);
 
@@ -123,7 +120,7 @@ class GameWorldTest {
     void destroyNotifiesObserver() {
         GameWorld gameWorld = newGameWorld();
         GameObject object = newObject(new GridPoint2(0, 0));
-        gameWorld.spawn(object, mock(TextureRegion.class));
+        gameWorld.spawn(object);
 
         gameWorld.destroy(object);
 
@@ -135,12 +132,12 @@ class GameWorldTest {
         GameWorld gameWorld = newGameWorld();
         GameObject first = newObject(new GridPoint2(0, 0));
         GameObject second = newObject(new GridPoint2(5, 5));
-        gameWorld.spawn(first, mock(TextureRegion.class));
-        gameWorld.spawn(second, mock(TextureRegion.class));
+        gameWorld.spawn(first);
+        gameWorld.spawn(second);
 
 
-        assertSame(first, renderer.lastRendered.get(0).getObject());
-        assertSame(second, renderer.lastRendered.get(1).getObject());
+        assertSame(first, renderer.lastRendered.get(0));
+        assertSame(second, renderer.lastRendered.get(1));
     }
 
     @Test
@@ -148,8 +145,8 @@ class GameWorldTest {
         GameWorld gameWorld = newGameWorld();
         GameObject mover = newObject(new GridPoint2(0, 0));
         GameObject obstacle = newObject(new GridPoint2(1, 0));
-        gameWorld.spawn(mover, mock(TextureRegion.class));
-        gameWorld.spawn(obstacle, mock(TextureRegion.class));
+        gameWorld.spawn(mover);
+        gameWorld.spawn(obstacle);
 
         assertFalse(gameWorld.isCellFree(mover, new GridPoint2(1, 0)));
     }
@@ -159,8 +156,8 @@ class GameWorldTest {
         GameWorld gameWorld = newGameWorld();
         GameObject mover = newObject(new GridPoint2(0, 0));
         GameObject obstacle = newObject(new GridPoint2(1, 0));
-        gameWorld.spawn(mover, mock(TextureRegion.class));
-        gameWorld.spawn(obstacle, mock(TextureRegion.class));
+        gameWorld.spawn(mover);
+        gameWorld.spawn(obstacle);
 
         gameWorld.destroy(obstacle);
 
@@ -170,7 +167,7 @@ class GameWorldTest {
     @Test
     void getObjectsReturnsTheSameViewAcrossCallsWithoutCopying() {
         GameWorld gameWorld = newGameWorld();
-        gameWorld.spawn(newObject(new GridPoint2(0, 0)), mock(TextureRegion.class));
+        gameWorld.spawn(newObject(new GridPoint2(0, 0)));
 
         assertSame(gameWorld.getObjects(), gameWorld.getObjects());
     }
@@ -178,7 +175,7 @@ class GameWorldTest {
     @Test
     void getObjectsDoesNotExposeTheInternalRegistry() {
         GameWorld gameWorld = newGameWorld();
-        gameWorld.spawn(newObject(new GridPoint2(0, 0)), mock(TextureRegion.class));
+        gameWorld.spawn(newObject(new GridPoint2(0, 0)));
 
         assertThrows(UnsupportedOperationException.class, () -> gameWorld.getObjects().clear());
         assertEquals(1, gameWorld.getObjects().size());
@@ -189,8 +186,8 @@ class GameWorldTest {
         GameWorld gameWorld = newGameWorld();
         Tank first = new Tank(new RectangleShape(new Rectangle(0, 0, 100, 100)), new GridPoint2(0, 0));
         Tank second = new Tank(new RectangleShape(new Rectangle(0, 0, 100, 100)), new GridPoint2(5, 5));
-        gameWorld.spawn(first, mock(TextureRegion.class));
-        gameWorld.spawn(second, mock(TextureRegion.class));
+        gameWorld.spawn(first);
+        gameWorld.spawn(second);
         first.move(Direction.RIGHT, gameWorld);
         second.move(Direction.UP, gameWorld);
 
@@ -204,7 +201,7 @@ class GameWorldTest {
     void updateLeavesStaticObjectsAlone() {
         GameWorld gameWorld = newGameWorld();
         GameObject tree = newObject(new GridPoint2(3, 3));
-        gameWorld.spawn(tree, mock(TextureRegion.class));
+        gameWorld.spawn(tree);
 
         gameWorld.update(1f);
 
@@ -215,7 +212,7 @@ class GameWorldTest {
     void updateDoesNotTouchDestroyedObjects() {
         GameWorld gameWorld = newGameWorld();
         Tank tank = new Tank(new RectangleShape(new Rectangle(0, 0, 100, 100)), new GridPoint2(0, 0));
-        gameWorld.spawn(tank, mock(TextureRegion.class));
+        gameWorld.spawn(tank);
         tank.move(Direction.RIGHT, gameWorld);
 
         gameWorld.destroy(tank);

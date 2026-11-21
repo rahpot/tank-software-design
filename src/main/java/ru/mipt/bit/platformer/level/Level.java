@@ -27,9 +27,9 @@ public final class Level {
         }
         this.width = width;
         this.height = height;
-        this.playerPosition = Objects.requireNonNull(playerPosition, "playerPosition");
+        this.playerPosition = new GridPoint2(Objects.requireNonNull(playerPosition, "playerPosition"));
         this.tankPositions = Collections.unmodifiableList(
-                new ArrayList<>(Objects.requireNonNull(tankPositions, "tankPositions")));
+                copyPositions(Objects.requireNonNull(tankPositions, "tankPositions")));
         this.placements = Collections.unmodifiableList(
                 new ArrayList<>(Objects.requireNonNull(placements, "placements")));
     }
@@ -43,11 +43,19 @@ public final class Level {
     }
 
     public GridPoint2 getPlayerPosition() {
-        return playerPosition;
+        return new GridPoint2(playerPosition);
     }
 
     public List<GridPoint2> getTankPositions() {
-        return tankPositions;
+        return Collections.unmodifiableList(copyPositions(tankPositions));
+    }
+
+    private static List<GridPoint2> copyPositions(Collection<GridPoint2> positions) {
+        List<GridPoint2> copies = new ArrayList<>(positions.size());
+        for (GridPoint2 position : positions) {
+            copies.add(new GridPoint2(position));
+        }
+        return copies;
     }
 
     public List<Placement> getPlacements() {
