@@ -1,5 +1,7 @@
 package ru.mipt.bit.platformer;
 
+import java.util.List;
+import ru.mipt.bit.platformer.command.Command;
 import ru.mipt.bit.platformer.collision.PlacementRule;
 import ru.mipt.bit.platformer.command.ToggleHealthBarsCommand;
 import ru.mipt.bit.platformer.control.AiController;
@@ -104,8 +106,9 @@ public class GameDesktopLauncher implements ApplicationListener {
 
         float deltaTime = Gdx.graphics.getDeltaTime();
 
-        inputHandler.handleInput();
-        aiController.controlTanks();
+        List<Command> commands = inputHandler.collectCommands();
+        commands.addAll(aiController.collectCommands());
+        commands.forEach(Command::execute);
 
         gameWorld.update(deltaTime);
 

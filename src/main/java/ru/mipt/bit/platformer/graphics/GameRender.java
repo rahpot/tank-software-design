@@ -65,6 +65,7 @@ public class GameRender implements Renderer, WorldListener {
         }
         batch.end();
     }
+    @Override
     public Rectangle renderRectangle(GameObject object) {
         Rectangle bounds = object.getCollisionShape().boundingRectangle();
         if (object instanceof Tank) {

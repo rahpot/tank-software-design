@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import ru.mipt.bit.platformer.world.Tank;
+import ru.mipt.bit.platformer.world.GameObject;
 import ru.mipt.bit.platformer.world.WorldObject;
 
 import java.util.Collection;
@@ -13,11 +14,11 @@ public final class HealthBarRenderer implements Renderer {
 
     private static final float BAR_HEIGHT = 6f;
 
-    private final GameRender delegate;
+    private final Renderer delegate;
     private final ShapeRenderer shapes;
     private boolean visible;
 
-    public HealthBarRenderer(GameRender delegate, ShapeRenderer shapes) {
+    public HealthBarRenderer(Renderer delegate, ShapeRenderer shapes) {
         this.delegate = delegate;
         this.shapes = shapes;
     }
@@ -40,6 +41,11 @@ public final class HealthBarRenderer implements Renderer {
             }
         }
         shapes.end();
+    }
+
+    @Override
+    public Rectangle renderRectangle(GameObject object) {
+        return delegate.renderRectangle(object);
     }
 
     private void drawBar(Tank tank) {

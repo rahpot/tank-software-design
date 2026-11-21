@@ -26,7 +26,7 @@ class InputHandlerTest {
         boolean[] executed = {false};
         InputHandler inputHandler = new InputHandler(pressed(42), Map.of(42, () -> executed[0] = true));
 
-        inputHandler.handleInput();
+        inputHandler.collectCommands().forEach(Command::execute);
 
         assertTrue(executed[0]);
     }
@@ -36,7 +36,7 @@ class InputHandlerTest {
         boolean[] executed = {false};
         InputHandler inputHandler = new InputHandler(NOTHING_PRESSED, Map.of(42, () -> executed[0] = true));
 
-        inputHandler.handleInput();
+        inputHandler.collectCommands().forEach(Command::execute);
 
         assertFalse(executed[0]);
     }
@@ -49,7 +49,7 @@ class InputHandlerTest {
         bindings.put(2, () -> executedCount[0]++);
         InputHandler inputHandler = new InputHandler(pressed(1, 2), bindings);
 
-        inputHandler.handleInput();
+        inputHandler.collectCommands().forEach(Command::execute);
 
         assertEquals(2, executedCount[0]);
     }
@@ -62,7 +62,7 @@ class InputHandlerTest {
         bindings.put(2, () -> executedCount[0]++);
         InputHandler inputHandler = new InputHandler(pressed(2), bindings);
 
-        inputHandler.handleInput();
+        inputHandler.collectCommands().forEach(Command::execute);
 
         assertEquals(1, executedCount[0]);
     }
@@ -73,7 +73,7 @@ class InputHandlerTest {
         InputHandler inputHandler = new InputHandler(pressed(7), Map.of());
         inputHandler.register(7, () -> executed[0] = true);
 
-        inputHandler.handleInput();
+        inputHandler.collectCommands().forEach(Command::execute);
 
         assertTrue(executed[0]);
     }
