@@ -1,47 +1,77 @@
 package ru.mipt.bit.platformer.world;
 
 import ru.mipt.bit.platformer.collision.PlacementRule;
-import ru.mipt.bit.platformer.graphics.Renderer;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class GameWorld implements Obstacles {
+public class GameWorld implements World {
 
     private final PlacementRule placementRule;
-    private final Renderer renderer;
-    private final List<WorldObject> objects = new ArrayList<>();
+    private final List<GameObject> gameObjects = new ArrayList<>();
+    private final List<GameObject> gameObjectsView = Collections.unmodifiableList(gameObjects);
+    private final List<WorldListener> listeners = new ArrayList<>();
 
-    public GameWorld(PlacementRule placementRule, Renderer renderer) {
+    public GameWorld(PlacementRule placementRule) {
         this.placementRule = placementRule;
-        this.renderer = renderer;
+    }
+
+    public void subscribe(WorldListener listener) {
+        listeners.add(listener);
     }
 
     public void spawn(GameObject object, TextureRegion texture) {
-        objects.add(new WorldObject(object, texture));
+        gameObjects.add(object);
+        object.world = this;
+        for (WorldListener listener : List.copyOf(listeners)) {
+            listener.added(object, texture);
+        }
+        resolveCollisions();
     }
 
     public void destroy(GameObject object) {
-        objects.removeIf(entry -> entry.getObject() == object);
+        if (!gameObjects.remove(object)) {
+            return;
+        }
+        object.world = null;
+        for (WorldListener listener : List.copyOf(listeners)) {
+            listener.removed(object);
+        }
     }
 
     @Override
     public boolean isCellFree(GameObject mover, GridPoint2 destination) {
-        return placementRule.isCellFree(mover, destination, getObjects());
+        return placementRule.isCellFree(mover, destination, gameObjectsView);
     }
 
+    @Override
     public List<GameObject> getObjects() {
-        List<GameObject> gameObjects = new ArrayList<>(objects.size());
-        for (WorldObject entry : objects) {
-            gameObjects.add(entry.getObject());
-        }
-        return gameObjects;
+        return gameObjectsView;
     }
 
-    public void render() {
-        renderer.render(objects);
+    public boolean isInside(GridPoint2 position) {
+        return !placementRule.isOutsideField(position);
+    }
+
+    private void resolveCollisions() {
+        for (GameObject object : List.copyOf(gameObjects)) {
+            if (gameObjects.contains(object)) {
+                object.collide();
+            }
+        }
+    }
+
+    public void update(float deltaTime) {
+        resolveCollisions();
+        for (GameObject object : List.copyOf(gameObjects)) {
+            if (gameObjects.contains(object)) {
+                object.update(deltaTime);
+                resolveCollisions();
+            }
+        }
     }
 }

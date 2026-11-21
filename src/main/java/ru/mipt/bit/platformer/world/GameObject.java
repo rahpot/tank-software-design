@@ -6,8 +6,11 @@ import ru.mipt.bit.platformer.util.TilePlacement;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
 
+import java.util.List;
+
 
 public class GameObject {
+    protected World world;
     private CollisionShape collisionShape;
     private GridPoint2 position;
     private float rotation;
@@ -30,6 +33,19 @@ public class GameObject {
 
     public boolean blocksMovement () {
         return true;
+    }
+
+    public void collide() {
+    }
+
+    public void hit(int damage) {
+    }
+
+    public void update(float deltaTime) {
+    }
+
+    public List<GridPoint2> getOccupiedPositions() {
+        return List.of(getCurrentPosition());
     }
 
     public void turn(Direction finishDirection) {

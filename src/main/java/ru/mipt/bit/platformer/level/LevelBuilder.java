@@ -3,35 +3,54 @@ package ru.mipt.bit.platformer.level;
 import ru.mipt.bit.platformer.collision.RectangleShape;
 import ru.mipt.bit.platformer.graphics.TextureSource;
 import ru.mipt.bit.platformer.world.GameWorld;
-import ru.mipt.bit.platformer.world.PlayerObject;
+import ru.mipt.bit.platformer.world.Player;
+import ru.mipt.bit.platformer.world.Tank;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.GridPoint2;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class LevelBuilder {
 
     private static final String DEFAULT_PLAYER_TEXTURE = "images/tank_blue.png";
+    private static final String DEFAULT_TANK_TEXTURE = "images/tank_blue.png";
 
     private final TextureSource textures;
     private final String playerTexturePath;
+    private final String tankTexturePath;
 
     public LevelBuilder(TextureSource textures) {
-        this(textures, DEFAULT_PLAYER_TEXTURE);
+        this(textures, DEFAULT_PLAYER_TEXTURE, DEFAULT_TANK_TEXTURE);
     }
 
     public LevelBuilder(TextureSource textures, String playerTexturePath) {
-        this.textures = textures;
-        this.playerTexturePath = playerTexturePath;
+        this(textures, playerTexturePath, DEFAULT_TANK_TEXTURE);
     }
 
-    public PlayerObject build(Level level, GameWorld gameWorld) {
+    public LevelBuilder(TextureSource textures, String playerTexturePath, String tankTexturePath) {
+        this.textures = textures;
+        this.playerTexturePath = playerTexturePath;
+        this.tankTexturePath = tankTexturePath;
+    }
+
+    public LevelObjects build(Level level, GameWorld gameWorld) {
         Map<String, TextureRegion> loaded = new HashMap<>();
 
         TextureRegion playerTexture = textureFor(loaded, playerTexturePath);
-        PlayerObject player = new PlayerObject(RectangleShape.of(playerTexture), level.getPlayerPosition());
+        Player player = new Player(RectangleShape.of(playerTexture), level.getPlayerPosition());
         gameWorld.spawn(player, playerTexture);
+
+        List<Tank> aiTanks = new ArrayList<>();
+        for (GridPoint2 position : level.getTankPositions()) {
+            TextureRegion tankTexture = textureFor(loaded, tankTexturePath);
+            Tank tank = new Tank(RectangleShape.of(tankTexture), position);
+            gameWorld.spawn(tank, tankTexture);
+            aiTanks.add(tank);
+        }
 
         for (Placement placement : level.getPlacements()) {
             ObjectTemplate template = placement.getTemplate();
@@ -39,7 +58,7 @@ public class LevelBuilder {
             gameWorld.spawn(template.create(placement.getPosition(), texture), texture);
         }
 
-        return player;
+        return new LevelObjects(player, aiTanks);
     }
 
     private TextureRegion textureFor(Map<String, TextureRegion> loaded, String path) {
