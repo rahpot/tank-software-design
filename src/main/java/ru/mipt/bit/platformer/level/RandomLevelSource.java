@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+/** Адаптер источника уровней. Создаёт случайный уровень в памяти. */
 public class RandomLevelSource implements LevelSource {
 
     private static final int DEFAULT_MIN_SIZE = 5;

@@ -32,7 +32,7 @@ public class AiController {
         List<Command> commands = new ArrayList<>();
         for (Map.Entry<Tank, Strategy> entry : controlledTanks.entrySet()) {
             Tank tank = entry.getKey();
-            if (tank.getHealth() < 0 || tank.isMoving()) {
+            if (!tank.isAlive() || tank.isMoving()) {
                 continue;
             }
             commands.add(entry.getValue().nextCommand(tank, world));

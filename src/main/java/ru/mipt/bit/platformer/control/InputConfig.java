@@ -1,8 +1,8 @@
 package ru.mipt.bit.platformer.control;
 
 import ru.mipt.bit.platformer.command.Command;
-import ru.mipt.bit.platformer.command.MoveCommand;
-import ru.mipt.bit.platformer.command.ShootCommand;
+import ru.mipt.bit.platformer.world.MoveCommand;
+import ru.mipt.bit.platformer.world.ShootCommand;
 import ru.mipt.bit.platformer.world.Direction;
 import ru.mipt.bit.platformer.world.Obstacles;
 import ru.mipt.bit.platformer.world.Tank;

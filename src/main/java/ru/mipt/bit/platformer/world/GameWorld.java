@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/** Реализация портов игрового мира. Хранит объекты и проверяет, свободны ли клетки. */
 public class GameWorld implements World {
 
     private final PlacementRule placementRule;

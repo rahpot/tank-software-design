@@ -6,6 +6,7 @@ import ru.mipt.bit.platformer.world.WorldObject;
 
 import java.util.Collection;
 
+/** Порт отрисовки объектов и определения границ их спрайтов. */
 public interface Renderer {
 
     Rectangle renderRectangle(GameObject object);

@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Файловый адаптер для чтения описания уровня. */
 public class LevelParserFromFile implements LevelSource {
 
     private static final String DEFAULT_MAP = "MainObjLevel.txt";

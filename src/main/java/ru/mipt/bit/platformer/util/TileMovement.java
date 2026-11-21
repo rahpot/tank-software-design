@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 
 
+/** Адаптер размещения объектов по клеткам карты libGDX. */
 public class TileMovement implements TilePlacement {
 
     private final TiledMapTileLayer tileLayer;

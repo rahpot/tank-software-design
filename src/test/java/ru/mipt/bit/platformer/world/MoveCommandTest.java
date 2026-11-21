@@ -1,9 +1,7 @@
-package ru.mipt.bit.platformer.command;
+package ru.mipt.bit.platformer.world;
 
 import ru.mipt.bit.platformer.collision.RectangleShape;
-import ru.mipt.bit.platformer.world.Direction;
-import ru.mipt.bit.platformer.world.Obstacles;
-import ru.mipt.bit.platformer.world.Tank;
+import ru.mipt.bit.platformer.command.Command;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;

@@ -10,14 +10,15 @@ import java.util.List;
 
 import static com.badlogic.gdx.math.MathUtils.isEqual;
 
-public class Tank extends GameObject {
+public class Tank extends GameObject implements Alive {
 
     public static final int MAX_HEALTH = 100;
     protected static final float DEFAULT_MOVEMENT_SPEED = 0.4f;
 
     private final float movementSpeed;
     private Direction direction = Direction.RIGHT;
-    private int health = MAX_HEALTH;
+    private final Health health = new Health(MAX_HEALTH);
+    private TankState state = TankState.LIGHT;
     private float reloadTime;
     private GridPoint2 destinationCoordinates;
     private float movementProgress = 1f;
@@ -29,26 +30,33 @@ public class Tank extends GameObject {
     }
 
     public void shoot() {
-        if (world != null && health >= 0 && reloadTime <= 0f) {
-            reloadTime = 0.4f;
+        if (world != null && state.canShoot() && reloadTime <= 0f) {
+            reloadTime = state.reloadTime();
             world.spawn(new Bullet(direction.apply(getCurrentPosition()), direction, 50, 0.1f, this));
         }
     }
 
+    @Override
+    public int getMaxHealth() {
+        return health.maximum();
+    }
+
+    @Override
     public int getHealth() {
-        return health;
+        return health.current();
     }
 
     @Override
     public void hit(int damage) {
-        health -= damage;
-        if (health < 0 && world != null) {
+        health.takeDamage(damage);
+        state = TankState.forHealth(getHealth(), getMaxHealth());
+        if (!isAlive() && world != null) {
             world.destroy(this);
         }
     }
 
     public void move(Direction direction, Obstacles obstacles) {
-        if (health >= 0 && isEqual(movementProgress, 1f)) {
+        if (isAlive() && isEqual(movementProgress, 1f)) {
             GridPoint2 destination = direction.apply(getCurrentPosition());
             if (obstacles.isCellFree(this, destination)) {
                 destinationCoordinates = destination;
@@ -61,7 +69,7 @@ public class Tank extends GameObject {
     @Override
     public void update(float deltaTime) {
         reloadTime = Math.max(0f, reloadTime - deltaTime);
-        movementProgress = continueProgress(movementProgress, deltaTime, movementSpeed);
+        movementProgress = continueProgress(movementProgress, deltaTime, state.movementTime(movementSpeed));
         if (isEqual(movementProgress, 1f)) {
             setPosition(destinationCoordinates);
         }

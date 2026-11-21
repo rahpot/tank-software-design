@@ -3,7 +3,7 @@ package ru.mipt.bit.platformer.control;
 import ru.mipt.bit.platformer.command.Command;
 
 import ru.mipt.bit.platformer.collision.RectangleShape;
-import ru.mipt.bit.platformer.command.MoveCommand;
+import ru.mipt.bit.platformer.world.MoveCommand;
 import ru.mipt.bit.platformer.strategy.Strategy;
 import ru.mipt.bit.platformer.world.Direction;
 import ru.mipt.bit.platformer.world.GameObject;

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Disposable;
 
+/** Адаптер libGDX для загрузки, хранения и освобождения текстур. */
 public class TextureRepository implements TextureSource, Disposable {
 
     private final AssetManager assetManager = new AssetManager();

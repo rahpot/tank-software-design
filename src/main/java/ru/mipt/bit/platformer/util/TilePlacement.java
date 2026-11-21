@@ -3,6 +3,7 @@ package ru.mipt.bit.platformer.util;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
 
+/** Порт для размещения прямоугольников по координатам клеток. */
 public interface TilePlacement {
 
     Rectangle moveRectangleToTileCenter(Rectangle rectangle, GridPoint2 tileCoordinates);

@@ -3,7 +3,7 @@ package ru.mipt.bit.platformer;
 import java.util.List;
 import ru.mipt.bit.platformer.command.Command;
 import ru.mipt.bit.platformer.collision.PlacementRule;
-import ru.mipt.bit.platformer.command.ToggleHealthBarsCommand;
+import ru.mipt.bit.platformer.graphics.ToggleHealthBarsCommand;
 import ru.mipt.bit.platformer.control.AiController;
 import ru.mipt.bit.platformer.control.GdxKeyboardInput;
 import ru.mipt.bit.platformer.control.InputConfig;
@@ -42,6 +42,7 @@ import static ru.mipt.bit.platformer.graphics.GroundLayer.TILE_SIZE;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 
+/** Адаптер настольной версии игры. Связывает компоненты и запускает обработку каждого кадра. */
 public class GameDesktopLauncher implements ApplicationListener {
 
     private static final Interpolation MOVEMENT_INTERPOLATION = Interpolation.smooth;
