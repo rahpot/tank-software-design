@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.control;
 
 import com.badlogic.gdx.Gdx;
 
+/** Адаптер клавиатуры. Через libGDX проверяет, нажата ли клавиша. */
 public class GdxKeyboardInput implements KeyboardInput {
 
     @Override

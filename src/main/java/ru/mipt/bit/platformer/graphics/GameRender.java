@@ -18,6 +18,7 @@ import java.util.List;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.drawTextureRegionUnscaled;
 
+/** Адаптер отрисовки libGDX. Получает уведомления о добавлении и удалении объектов. */
 public class GameRender implements Renderer, WorldListener {
 
     private final Batch batch;
@@ -65,6 +66,7 @@ public class GameRender implements Renderer, WorldListener {
         }
         batch.end();
     }
+    @Override
     public Rectangle renderRectangle(GameObject object) {
         Rectangle bounds = object.getCollisionShape().boundingRectangle();
         if (object instanceof Tank) {

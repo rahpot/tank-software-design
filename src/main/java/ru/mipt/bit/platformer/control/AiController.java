@@ -1,10 +1,13 @@
 package ru.mipt.bit.platformer.control;
 
+import ru.mipt.bit.platformer.command.Command;
 import ru.mipt.bit.platformer.strategy.Strategy;
 import ru.mipt.bit.platformer.world.Tank;
 import ru.mipt.bit.platformer.world.WorldView;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -25,13 +28,15 @@ public class AiController {
         controlledTanks.remove(tank);
     }
 
-    public void controlTanks() {
+    public List<Command> collectCommands() {
+        List<Command> commands = new ArrayList<>();
         for (Map.Entry<Tank, Strategy> entry : controlledTanks.entrySet()) {
             Tank tank = entry.getKey();
-            if (tank.getHealth() < 0 || tank.isMoving()) {
+            if (!tank.isAlive() || tank.isMoving()) {
                 continue;
             }
-            entry.getValue().nextCommand(tank, world).execute();
+            commands.add(entry.getValue().nextCommand(tank, world));
         }
+        return commands;
     }
 }

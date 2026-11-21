@@ -1,6 +1,7 @@
-package ru.mipt.bit.platformer.command;
+package ru.mipt.bit.platformer.graphics;
 
-import ru.mipt.bit.platformer.graphics.HealthBarRenderer;
+import ru.mipt.bit.platformer.command.Command;
+
 
 public final class ToggleHealthBarsCommand implements Command {
 

@@ -31,6 +31,22 @@ class BulletTest {
         return tank;
     }
 
+    @ParameterizedTest
+    @ValueSource(ints = {71, 70, 15, 14, 0})
+    void healthChangesMovementAndShootingDuringAMove(int health) {
+        Tank tank = tank(2, 2);
+        tank.move(Direction.RIGHT, world);
+        tank.update(0.1f);
+        tank.hit(Tank.MAX_HEALTH - health);
+        tank.update(0.12f);
+
+        float expectedProgress = health > 70 ? 0.55f : health >= 15 ? 0.4f : 0.35f;
+        assertEquals(expectedProgress, tank.getMovementProgress(), 0.001f);
+        tank.turn(Direction.UP);
+        tank.shoot();
+        assertEquals(health >= 15 ? 2 : 1, world.getObjects().size());
+    }
+
     private Bullet bullet(int x, int y, Direction direction, int damage) {
         Bullet bullet = new Bullet(new GridPoint2(x, y), direction, damage, 0.1f, null);
         world.spawn(bullet);

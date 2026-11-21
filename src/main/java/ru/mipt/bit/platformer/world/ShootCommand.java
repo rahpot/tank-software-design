@@ -1,6 +1,7 @@
-package ru.mipt.bit.platformer.command;
+package ru.mipt.bit.platformer.world;
 
-import ru.mipt.bit.platformer.world.Tank;
+import ru.mipt.bit.platformer.command.Command;
+
 import java.util.Objects;
 
 public class ShootCommand implements Command {

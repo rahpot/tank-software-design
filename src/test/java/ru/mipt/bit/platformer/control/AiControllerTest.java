@@ -1,7 +1,9 @@
 package ru.mipt.bit.platformer.control;
 
+import ru.mipt.bit.platformer.command.Command;
+
 import ru.mipt.bit.platformer.collision.RectangleShape;
-import ru.mipt.bit.platformer.command.MoveCommand;
+import ru.mipt.bit.platformer.world.MoveCommand;
 import ru.mipt.bit.platformer.strategy.Strategy;
 import ru.mipt.bit.platformer.world.Direction;
 import ru.mipt.bit.platformer.world.GameObject;
@@ -48,7 +50,7 @@ class AiControllerTest {
         AiController controller = new AiController(world);
         controller.register(tank, alwaysMove(Direction.RIGHT));
 
-        controller.controlTanks();
+        controller.collectCommands().forEach(Command::execute);
         tank.update(1f);
 
         assertEquals(new GridPoint2(2, 1), tank.getCurrentPosition());
@@ -64,9 +66,9 @@ class AiControllerTest {
             return new MoveCommand(controlled, Direction.RIGHT, visibleWorld);
         });
 
-        controller.controlTanks();
+        controller.collectCommands().forEach(Command::execute);
         tank.update(0.1f);
-        controller.controlTanks();
+        controller.collectCommands().forEach(Command::execute);
 
         assertTrue(tank.isMoving());
         assertEquals(1, asked.size());
@@ -78,9 +80,9 @@ class AiControllerTest {
         AiController controller = new AiController(world);
         controller.register(tank, alwaysMove(Direction.RIGHT));
 
-        controller.controlTanks();
+        controller.collectCommands().forEach(Command::execute);
         tank.update(1f);
-        controller.controlTanks();
+        controller.collectCommands().forEach(Command::execute);
         tank.update(1f);
 
         assertEquals(new GridPoint2(3, 1), tank.getCurrentPosition());
@@ -94,7 +96,7 @@ class AiControllerTest {
         controller.register(goingRight, alwaysMove(Direction.RIGHT));
         controller.register(goingUp, alwaysMove(Direction.UP));
 
-        controller.controlTanks();
+        controller.collectCommands().forEach(Command::execute);
         goingRight.update(1f);
         goingUp.update(1f);
 
@@ -112,7 +114,7 @@ class AiControllerTest {
             return new MoveCommand(controlled, Direction.RIGHT, visibleWorld);
         });
 
-        controller.controlTanks();
+        controller.collectCommands().forEach(Command::execute);
 
         assertSame(world, seen.get(0));
     }
@@ -124,7 +126,7 @@ class AiControllerTest {
         controller.register(tank, alwaysMove(Direction.RIGHT));
 
         controller.unregister(tank);
-        controller.controlTanks();
+        controller.collectCommands().forEach(Command::execute);
         tank.update(1f);
 
         assertEquals(new GridPoint2(1, 1), tank.getCurrentPosition());
